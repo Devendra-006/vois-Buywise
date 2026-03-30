@@ -425,7 +425,7 @@
       );
     }
 
-    function ComparisonTable({ products, selId, setSelId, onSetAlert }) {
+    function ComparisonTable({ products, selId, setSelId, onSetAlert, viewGraph }) {
       const [sortBy, setSortBy] = useState("smart_score");
       const [sortDir, setSortDir] = useState("desc");
 
@@ -480,6 +480,7 @@
                   <th className="px-3 py-2.5 text-right cursor-pointer hover:text-sky-400" onClick={() => handleSort("smart_score")}>
                     Score {sortBy === "smart_score" && (sortDir === "asc" ? "↑" : "↓")}
                   </th>
+                  <th className="px-3 py-2.5 text-center">Graph</th>
                 </tr>
               </thead>
               <tbody>
@@ -501,6 +502,9 @@
                       <td className="px-3 py-2.5 text-right">⭐ {p.rating || p.seller_rating || "4.0"}</td>
                       <td className="px-3 py-2.5 text-right text-slate-500">{p.reviews_count ? p.reviews_count.toLocaleString() : "-"}</td>
                       <td className="px-3 py-2.5 text-right font-bold text-sky-400">{p.smart_score}</td>
+                      <td className="px-3 py-2.5 text-center">
+                        <button onClick={(e) => { e.stopPropagation(); viewGraph(p.id); }} className="text-sky-400 hover:text-sky-300 text-lg" title="View Price Graph">📈</button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -518,6 +522,9 @@
       const [error, setError] = useState(null);
       const [data, setData] = useState(null);
       const [selId, setSelId] = useState(null);
+      const [showChart, setShowChart] = useState(false);
+      const viewGraph = (id) => { setSelId(id); setShowChart(true); };
+      const closeModal = () => { setSelId(null); setShowChart(false); };
       const [wish, setWish] = useState([]);
       const [alerts, setAlerts] = useState([]);
       const [history, setHistory] = useState([]);
@@ -658,12 +665,12 @@
                       <TopCard emoji="⭐" title="Premium Pick" item={data.topPicks?.premium_pick} color="purple" onWish={addWish} />
                     </div>
 
-                    <ComparisonTable products={data.products} selId={selId} setSelId={setSelId} onSetAlert={addAlert} />
+                    <ComparisonTable products={data.products} selId={selId} setSelId={setSelId} onSetAlert={addAlert} viewGraph={viewGraph} />
                   </section>
                 )}
                 
                 {sel && (
-                  <ProductDetailModal product={sel} onClose={() => setSelId(null)} onWish={addWish} onAlert={addAlert} showChart={true} />
+                  <ProductDetailModal product={sel} onClose={closeModal} onWish={addWish} onAlert={addAlert} showChart={showChart} />
                 )}
 
                 {!data && !loading && (
