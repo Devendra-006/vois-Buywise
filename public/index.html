@@ -5,21 +5,56 @@
     <title>BuyWise – Agentic AI Buying Assistant</title>
     <meta name="description" content="Multi-agent AI buying assistant that searches across multiple e-commerce websites to find the best product for you." />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Tailwind via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & ReactDOM UMD -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <!-- Babel for JSX in-browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       * { font-family: 'Inter', system-ui, sans-serif; }
+      :root {
+        --bg-primary: #020617;
+        --bg-secondary: #0f172a;
+        --bg-tertiary: #1e293b;
+        --text-primary: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --text-muted: #64748b;
+        --accent-sky: #38bdf8;
+        --accent-emerald: #34d399;
+        --accent-amber: #fbbf24;
+        --accent-violet: #a78bfa;
+        --accent-rose: #fb7185;
+        --border-color: rgba(148, 163, 184, 0.2);
+      }
+      .light-mode {
+        --bg-primary: #f8fafc;
+        --bg-secondary: #f1f5f9;
+        --bg-tertiary: #e2e8f0;
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #94a3b8;
+        --border-color: rgba(71, 85, 105, 0.2);
+      }
+      body { background: var(--bg-primary); color: var(--text-primary); }
+      .bg-primary { background: var(--bg-primary); }
+      .bg-secondary { background: var(--bg-secondary); }
+      .bg-tertiary { background: var(--bg-tertiary); }
+      .text-primary { color: var(--text-primary); }
+      .text-secondary { color: var(--text-secondary); }
+      .text-muted { color: var(--text-muted); }
+      .border-custom { border-color: var(--border-color); }
+      .accent-sky { color: var(--accent-sky); }
+      .accent-emerald { color: var(--accent-emerald); }
+      .accent-amber { color: var(--accent-amber); }
+      .accent-violet { color: var(--accent-violet); }
+      .accent-rose { color: var(--accent-rose); }
+      .bg-accent-sky { background: var(--accent-sky); }
+      .bg-accent-emerald { background: var(--accent-emerald); }
+      .bg-accent-amber { background: var(--accent-amber); }
+      .bg-accent-violet { background: var(--accent-violet); }
       @keyframes shimmer {
         0% { background-position: -200% 0; }
         100% { background-position: 200% 0; }
@@ -34,20 +69,25 @@
         to { opacity: 1; transform: translateY(0); }
       }
       .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+      .slide-in { animation: slideIn 0.3s ease-out forwards; }
       @keyframes pulse-dot {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.3; }
       }
       .pulse-dot { animation: pulse-dot 1.2s ease-in-out infinite; }
+      @keyframes toastSlide {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      .toast-slide { animation: toastSlide 0.3s ease-out forwards; }
       .platform-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 2px 8px;
-        border-radius: 9999px;
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.025em;
-        text-transform: uppercase;
+        display: inline-flex; align-items: center; padding: 2px 8px;
+        border-radius: 9999px; font-size: 10px; font-weight: 600;
+        letter-spacing: 0.025em; text-transform: uppercase;
       }
       .platform-amazon { background: rgba(255,153,0,0.15); color: #f59e0b; border: 1px solid rgba(255,153,0,0.3); }
       .platform-flipkart { background: rgba(47,126,216,0.15); color: #60a5fa; border: 1px solid rgba(47,126,216,0.3); }
@@ -55,15 +95,39 @@
       .platform-reliance { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
       .platform-myntra { background: rgba(236,72,153,0.15); color: #f472b6; border: 1px solid rgba(236,72,153,0.3); }
       .platform-default { background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      .nav-item { transition: all 0.2s ease; }
+      .nav-item:hover { background: var(--bg-tertiary); }
+      .nav-item.active { background: rgba(56, 189, 248, 0.1); border-left: 2px solid var(--accent-sky); }
+      input[type="range"] { -webkit-appearance: none; height: 4px; border-radius: 2px; background: var(--bg-tertiary); }
+      input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent-sky); cursor: pointer; }
     </style>
   </head>
-  <body class="bg-slate-950 text-slate-100">
+  <body>
     <div id="root"></div>
 
     <script type="text/babel">
-      const { useState, useEffect, useRef } = React;
+      const { useState, useEffect, useRef, useCallback } = React;
 
-      function getPlatformClass(platform) {
+      const CATEGORIES = [
+        { id: "all", name: "All Categories", icon: "🏷️" },
+        { id: "electronics", name: "Electronics", icon: "📱" },
+        { id: "fashion", name: "Fashion", icon: "👕" },
+        { id: "home", name: "Home & Kitchen", icon: "🏠" },
+        { id: "beauty", name: "Beauty", icon: "💄" },
+        { id: "sports", name: "Sports", icon: "⚽" },
+        { id: "books", name: "Books", icon: "📚" },
+      ];
+
+      const PLATFORMS = ["Amazon", "Flipkart", "Croma", "Reliance Digital", "Myntra", "Ajio", "Nykaa"];
+      
+      const TRENDING_SEARCHES = [
+        "laptop under 50k", "wireless earbuds", "running shoes", 
+        "smartphone 5G", "winter jackets", "pressure cooker"
+      ];
+
+      const getPlatformClass = (platform) => {
         const p = (platform || "").toLowerCase();
         if (p.includes("amazon")) return "platform-amazon";
         if (p.includes("flipkart")) return "platform-flipkart";
@@ -71,34 +135,43 @@
         if (p.includes("reliance")) return "platform-reliance";
         if (p.includes("myntra") || p.includes("ajio") || p.includes("nykaa")) return "platform-myntra";
         return "platform-default";
-      }
+      };
 
-      function PlatformBadge({ platform }) {
+      function Toast({ message, type, onClose }) {
+        useEffect(() => {
+          const timer = setTimeout(onClose, 3000);
+          return () => clearTimeout(timer);
+        }, [onClose]);
+
+        const colors = {
+          success: "bg-emerald-500/90 border-emerald-400",
+          error: "bg-rose-500/90 border-rose-400",
+          info: "bg-sky-500/90 border-sky-400",
+          warning: "bg-amber-500/90 border-amber-400"
+        };
+
         return (
-          <span className={`platform-badge ${getPlatformClass(platform)}`}>
-            {platform}
-          </span>
+          <div className={`toast-slide fixed bottom-4 right-4 ${colors[type]} border rounded-xl px-4 py-3 flex items-center gap-3 shadow-lg z-50`}>
+            <span className="text-white text-sm">{message}</span>
+            <button onClick={onClose} className="text-white/70 hover:text-white">✕</button>
+          </div>
         );
       }
 
       function WeightSlider({ label, value, onChange, color, icon }) {
         return (
           <div className="flex flex-col space-y-1">
-            <div className="flex justify-between text-xs uppercase tracking-wide text-slate-300">
+            <div className="flex justify-between text-xs uppercase tracking-wide text-secondary">
               <span className="flex items-center gap-1.5">
                 <span>{icon}</span>
                 <span>{label}</span>
               </span>
-              <span className="font-mono text-sky-400">{value.toFixed(2)}</span>
+              <span className="font-mono accent-sky">{value.toFixed(2)}</span>
             </div>
             <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.05"
-              value={value}
-              onChange={(e) => onChange(parseFloat(e.target.value))}
-              className={`w-full accent-${color}-400`}
+              type="range" min="0" max="1" step="0.05"
+              value={value} onChange={(e) => onChange(parseFloat(e.target.value))}
+              className="w-full"
             />
           </div>
         );
@@ -106,49 +179,35 @@
 
       function AgentProgressBar({ loading }) {
         const stages = [
-          { icon: "🌐", label: "Searching websites", delay: 0 },
-          { icon: "📦", label: "Retrieving products", delay: 1500 },
-          { icon: "💬", label: "Analyzing reviews", delay: 3500 },
-          { icon: "💰", label: "Evaluating prices", delay: 5000 },
-          { icon: "⚖️", label: "Scoring & ranking", delay: 6500 },
-          { icon: "🎯", label: "Selecting top picks", delay: 7500 },
-          { icon: "🧾", label: "Generating explanation", delay: 8500 },
+          { icon: "🌐", label: "Searching" }, { icon: "📦", label: "Retrieving" },
+          { icon: "💬", label: "Analyzing" }, { icon: "💰", label: "Pricing" },
+          { icon: "⚖️", label: "Scoring" }, { icon: "🎯", label: "Selecting" },
+          { icon: "🧾", label: "Explaining" },
         ];
-
         const [activeStage, setActiveStage] = useState(0);
 
         useEffect(() => {
-          if (!loading) {
-            setActiveStage(0);
-            return;
-          }
-
-          const timers = stages.map((stage, index) =>
-            setTimeout(() => setActiveStage(index), stage.delay)
-          );
-
+          if (!loading) { setActiveStage(0); return; }
+          const timers = stages.map((_, i) => setTimeout(() => setActiveStage(i), i * 1200));
           return () => timers.forEach(clearTimeout);
         }, [loading]);
 
         if (!loading) return null;
 
         return (
-          <div className="bg-slate-900/70 border border-slate-700/60 rounded-2xl p-5 fade-in">
+          <div className="bg-secondary border border-custom rounded-2xl p-5 fade-in">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 rounded-full bg-sky-400 pulse-dot"></div>
-              <span className="text-xs uppercase tracking-widest text-sky-300 font-semibold">Agent Pipeline Active</span>
+              <div className="w-2 h-2 rounded-full bg-accent-sky pulse-dot"></div>
+              <span className="text-xs uppercase tracking-widest accent-sky font-semibold">Agent Pipeline Active</span>
             </div>
             <div className="grid grid-cols-7 gap-2">
-              {stages.map((stage, index) => (
-                <div
-                  key={index}
-                  className={`flex flex-col items-center text-center gap-1.5 p-2 rounded-xl transition-all duration-500
-                    ${index < activeStage ? "opacity-40" : ""}
-                    ${index === activeStage ? "bg-sky-500/10 border border-sky-500/30 shimmer" : ""}
-                    ${index > activeStage ? "opacity-20" : ""}`}
-                >
+              {stages.map((stage, i) => (
+                <div key={i} className={`flex flex-col items-center text-center gap-1.5 p-2 rounded-xl transition-all duration-500
+                  ${i < activeStage ? "opacity-40" : ""}
+                  ${i === activeStage ? "bg-sky-500/10 border border-sky-500/30 shimmer" : ""}
+                  ${i > activeStage ? "opacity-20" : ""}`}>
                   <span className="text-xl">{stage.icon}</span>
-                  <span className="text-[10px] text-slate-300 leading-tight">{stage.label}</span>
+                  <span className="text-[10px] text-secondary leading-tight">{stage.label}</span>
                 </div>
               ))}
             </div>
@@ -163,160 +222,323 @@
         useEffect(() => {
           if (!product || !product.historical_price) return;
           const ctx = canvasRef.current.getContext("2d");
-
-          if (chartRef.current) {
-            chartRef.current.destroy();
-          }
-
+          if (chartRef.current) chartRef.current.destroy();
           chartRef.current = new Chart(ctx, {
             type: "line",
             data: {
               labels: product.historical_price.map((_, i) => `T-${product.historical_price.length - i}`),
-              datasets: [
-                {
-                  label: "Historical Price (₹)",
-                  data: product.historical_price,
-                  borderColor: "#38bdf8",
-                  backgroundColor: "rgba(56, 189, 248, 0.1)",
-                  tension: 0.4,
-                  fill: true,
-                  pointBackgroundColor: "#38bdf8",
-                  pointBorderColor: "#0f172a",
-                  pointBorderWidth: 2,
-                  pointRadius: 4
-                }
-              ]
+              datasets: [{ label: "Price (₹)", data: product.historical_price, borderColor: "#38bdf8", backgroundColor: "rgba(56, 189, 248, 0.1)", tension: 0.4, fill: true, pointBackgroundColor: "#38bdf8", pointBorderColor: "#020617", pointBorderWidth: 2, pointRadius: 4 }]
             },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: {
-                  labels: { color: "#e5e7eb", font: { family: "Inter" } }
-                }
-              },
-              scales: {
-                x: {
-                  ticks: { color: "#9ca3af", font: { family: "Inter" } },
-                  grid: { color: "rgba(148,163,184,0.08)" }
-                },
-                y: {
-                  ticks: {
-                    color: "#9ca3af",
-                    font: { family: "Inter" },
-                    callback: (val) => "₹" + val.toLocaleString()
-                  },
-                  grid: { color: "rgba(148,163,184,0.08)" }
-                }
-              }
-            }
+            options: { responsive: true, plugins: { legend: { labels: { color: "#e5e7eb", font: { family: "Inter" } } } },
+              scales: { x: { ticks: { color: "#9ca3af" }, grid: { color: "rgba(148,163,184,0.08)" } },
+                y: { ticks: { color: "#9ca3af", callback: (val) => "₹" + val.toLocaleString() }, grid: { color: "rgba(148,163,184,0.08)" } } }
           });
-
-          return () => {
-            if (chartRef.current) chartRef.current.destroy();
-          };
+          return () => { if (chartRef.current) chartRef.current.destroy(); };
         }, [product]);
 
         if (!product) return null;
 
         return (
-          <div className="bg-slate-900/70 border border-slate-700/60 rounded-2xl p-4 h-full">
+          <div className="bg-secondary border border-custom rounded-2xl p-4 h-full">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-sm">📈</span>
-              <h3 className="text-sm font-semibold text-sky-300">
-                Price Trend
-              </h3>
+              <h3 className="text-sm font-semibold accent-sky">Price Trend</h3>
             </div>
-            <p className="text-xs text-slate-400 mb-2">{product.title}</p>
+            <p className="text-xs text-muted mb-2">{product.title}</p>
             <canvas ref={canvasRef} height="180"></canvas>
           </div>
         );
       }
 
-      function TopPickCard({ emoji, title, item, accentColor }) {
+      function TopPickCard({ emoji, title, item, accentColor, onAddToWishlist }) {
         if (!item) return null;
-        const borderColors = {
-          gold: "border-amber-500/40 hover:border-amber-500/60",
-          green: "border-emerald-500/40 hover:border-emerald-500/60",
-          purple: "border-violet-500/40 hover:border-violet-500/60"
-        };
-        const gradients = {
-          gold: "from-amber-500/10 to-transparent",
-          green: "from-emerald-500/10 to-transparent",
-          purple: "from-violet-500/10 to-transparent"
-        };
+        const borders = { gold: "border-amber-500/40 hover:border-amber-500/60", green: "border-emerald-500/40 hover:border-emerald-500/60", purple: "border-violet-500/40 hover:border-violet-500/60" };
+        const gradients = { gold: "from-amber-500/10", green: "from-emerald-500/10", purple: "from-violet-500/10" };
+
         return (
-          <div className={`bg-gradient-to-b ${gradients[accentColor] || ""} bg-slate-900/70 border ${borderColors[accentColor] || "border-slate-700/60"} rounded-2xl p-4 flex flex-col space-y-3 transition-all duration-300 fade-in`}>
+          <div className={`bg-gradient-to-b ${gradients[accentColor]} bg-secondary border ${borders[accentColor]} rounded-2xl p-4 flex flex-col space-y-3 transition-all duration-300 fade-in hover:scale-[1.02]`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="text-2xl">{emoji}</span>
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
-                    {title}
-                  </div>
-                  <div className="font-semibold text-sm mt-0.5">{item.title}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted font-semibold">{title}</div>
+                  <div className="font-semibold text-sm mt-0.5 line-clamp-1">{item.title}</div>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sky-300 font-mono text-[10px] uppercase tracking-wider">
-                  Smart Score
-                </div>
-                <div className="text-xl font-bold text-sky-400">
-                  {item.smart_score}
-                </div>
+                <div className="text-[10px] uppercase tracking-wider text-muted">Smart Score</div>
+                <div className="text-xl font-bold accent-sky">{item.smart_score}</div>
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <PlatformBadge platform={item.platform} />
+            <div className="flex items-center gap-2">
+              <span className={`platform-badge ${getPlatformClass(item.platform)}`}>{item.platform}</span>
+              <button onClick={() => onAddToWishlist(item)} className="text-rose-400 hover:text-rose-300 text-sm">♡</button>
               {item.product_url && item.product_url !== "#" && (
-                <a href={item.product_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-sky-400 hover:text-sky-300 underline underline-offset-2">
-                  View on {item.platform} →
-                </a>
+                <a href={item.product_url} target="_blank" rel="noopener noreferrer" className="text-[10px] accent-sky hover:text-sky-300 underline underline-offset-2">View →</a>
               )}
             </div>
             {item.why_selected && (
               <div className="space-y-1.5">
                 {item.why_selected.map((reason, idx) => (
-                  <div key={idx} className="text-xs text-slate-300 flex items-start">
-                    <span className="mr-1.5 text-sky-400">✓</span>
+                  <div key={idx} className="text-xs text-secondary flex items-start">
+                    <span className="mr-1.5 accent-sky">✓</span>
                     <span>{reason}</span>
                   </div>
                 ))}
               </div>
             )}
             {item.trade_off && (
-              <div className="text-[11px] text-slate-400 italic border-t border-slate-800 pt-2">
-                ⚖️ {item.trade_off}
-              </div>
+              <div className="text-[11px] text-muted italic border-t border-custom pt-2">⚖️ {item.trade_off}</div>
             )}
-            <div className="flex justify-between text-xs text-slate-400 pt-1 border-t border-slate-800/50">
-              <span className="font-semibold text-slate-200">₹{item.price.toLocaleString()}</span>
+            <div className="flex justify-between text-xs text-muted pt-1 border-t border-custom/50">
+              <span className="font-semibold text-primary">₹{item.price.toLocaleString()}</span>
               <span>⭐ {item.seller_rating}</span>
               <span>🚚 {item.delivery_days}d</span>
-              <span>🛡️ {item.warranty}</span>
+            </div>
+          </div>
+        );
+      }
+
+      function PlatformBadge({ platform }) {
+        return <span className={`platform-badge ${getPlatformClass(platform)}`}>{platform}</span>;
+      }
+
+      function EmptyState({ icon, title, message }) {
+        return (
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <span className="text-5xl mb-4">{icon}</span>
+            <h3 className="text-lg font-semibold text-primary mb-2">{title}</h3>
+            <p className="text-sm text-muted max-w-md">{message}</p>
+          </div>
+        );
+      }
+
+      function Sidebar({ activeView, setActiveView, searchHistory, onSearchHistory, onThemeToggle, darkMode }) {
+        return (
+          <aside className="w-64 bg-secondary border-r border-custom h-screen sticky top-0 flex flex-col overflow-y-auto scrollbar-hide">
+            <div className="p-4 border-b border-custom">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🛒</span>
+                <span className="font-bold text-lg">BuyWise</span>
+              </div>
+            </div>
+
+            <nav className="flex-1 p-3">
+              <div className="space-y-1">
+                {[
+                  { id: "home", icon: "🏠", label: "Home" },
+                  { id: "wishlist", icon: "❤️", label: "Wishlist" },
+                  { id: "alerts", icon: "🔔", label: "Price Alerts" },
+                  { id: "history", icon: "🕐", label: "Search History" },
+                  { id: "settings", icon: "⚙️", label: "Settings" },
+                ].map(item => (
+                  <button key={item.id} onClick={() => setActiveView(item.id)}
+                    className={`nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm ${activeView === item.id ? "active bg-sky-500/10" : "text-secondary hover:bg-tertiary"}`}>
+                    <span>{item.icon}</span>
+                    <span>{item.label}</span>
+                    {item.id === "wishlist" && <span className="ml-auto text-xs bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded-full">0</span>}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-6">
+                <h4 className="text-[10px] uppercase tracking-widest text-muted font-semibold px-3 mb-2">Categories</h4>
+                <div className="space-y-1">
+                  {CATEGORIES.map(cat => (
+                    <button key={cat.id} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-secondary hover:bg-tertiary transition">
+                      <span>{cat.icon}</span>
+                      <span>{cat.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <h4 className="text-[10px] uppercase tracking-widest text-muted font-semibold px-3 mb-2">Trending</h4>
+                <div className="space-y-1">
+                  {TRENDING_SEARCHES.map((term, i) => (
+                    <button key={i} onClick={() => { setActiveView("home"); onSearchHistory(term); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-secondary hover:bg-tertiary transition text-left">
+                      <span className="text-muted">🔥</span>
+                      <span className="truncate">{term}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </nav>
+
+            <div className="p-4 border-t border-custom">
+              <button onClick={onThemeToggle} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-sm text-secondary hover:bg-tertiary transition">
+                <span>{darkMode ? "☀️" : "🌙"}</span>
+                <span>{darkMode ? "Light Mode" : "Dark Mode"}</span>
+              </button>
+            </div>
+          </aside>
+        );
+      }
+
+      function WishlistView({ wishlist, onRemove }) {
+        if (wishlist.length === 0) {
+          return <EmptyState icon="❤️" title="Your wishlist is empty" message="Start searching to add products to your wishlist" />;
+        }
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {wishlist.map((item, i) => (
+              <div key={i} className="bg-secondary border border-custom rounded-2xl p-4 fade-in">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-sm line-clamp-2">{item.title}</h3>
+                    <span className={`platform-badge ${getPlatformClass(item.platform)} mt-2`}>{item.platform}</span>
+                  </div>
+                  <button onClick={() => onRemove(i)} className="text-rose-400 hover:text-rose-300 ml-2">✕</button>
+                </div>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-lg font-bold accent-emerald">₹{item.price.toLocaleString()}</span>
+                    <span className="text-xs text-muted line-through ml-2">₹{item.original_price?.toLocaleString()}</span>
+                  </div>
+                  <span className="text-sm">⭐ {item.seller_rating}</span>
+                </div>
+                <a href={item.product_url || "#"} target="_blank" rel="noopener noreferrer" className="mt-3 block w-full text-center py-2 bg-sky-500 hover:bg-sky-600 rounded-xl text-sm font-semibold transition">
+                  View Product
+                </a>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      function AlertsView({ alerts, onRemove }) {
+        if (alerts.length === 0) {
+          return <EmptyState icon="🔔" title="No price alerts" message="Set alerts to track product prices and get notified when they drop" />;
+        }
+        return (
+          <div className="space-y-3">
+            {alerts.map((alert, i) => (
+              <div key={i} className="bg-secondary border border-custom rounded-2xl p-4 fade-in flex items-center justify-between">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm">{alert.title}</h3>
+                  <p className="text-xs text-muted mt-1">Target: ₹{alert.targetPrice?.toLocaleString()} | Current: ₹{alert.currentPrice?.toLocaleString()}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${alert.status === "Active" ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"}`}>{alert.status}</span>
+                  <button onClick={() => onRemove(i)} className="text-rose-400 hover:text-rose-300">✕</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      function HistoryView({ history, onRerun, onClear }) {
+        if (history.length === 0) {
+          return <EmptyState icon="🕐" title="No recent searches" message="Start searching to see your search history" />;
+        }
+        return (
+          <div className="space-y-2">
+            <button onClick={onClear} className="text-xs text-rose-400 hover:text-rose-300 mb-3">Clear all history</button>
+            {history.map((item, i) => (
+              <div key={i} className="bg-secondary border border-custom rounded-xl p-3 flex items-center justify-between fade-in">
+                <div>
+                  <p className="font-medium text-sm">{item.query}</p>
+                  <p className="text-xs text-muted">{item.date} • {item.results} results</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => onRerun(item.query)} className="px-3 py-1.5 bg-sky-500/20 accent-sky rounded-lg text-xs font-semibold hover:bg-sky-500/30 transition">Re-run</button>
+                  <button onClick={() => {}} className="text-muted hover:text-rose-400">✕</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      function SettingsView() {
+        return (
+          <div className="max-w-2xl space-y-6">
+            <div className="bg-secondary border border-custom rounded-2xl p-5">
+              <h3 className="font-semibold mb-4">Default Weight Presets</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {[
+                  { name: "Budget Buyer", desc: "Price-focused", color: "emerald" },
+                  { name: "Balanced", desc: "All factors equal", color: "sky" },
+                  { name: "Quality First", desc: "Reviews & rating", color: "violet" },
+                ].map((preset, i) => (
+                  <button key={i} className="p-4 bg-tertiary border border-custom rounded-xl text-left hover:border-sky-500/50 transition">
+                    <div className={`w-3 h-3 rounded-full bg-accent-${preset.color} mb-2`}></div>
+                    <h4 className="font-semibold text-sm">{preset.name}</h4>
+                    <p className="text-xs text-muted">{preset.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-secondary border border-custom rounded-2xl p-5">
+              <h3 className="font-semibold mb-4">Notifications</h3>
+              <div className="space-y-3">
+                {[
+                  { label: "Email notifications", checked: true },
+                  { label: "Push notifications", checked: true },
+                  { label: "SMS alerts", checked: false },
+                ].map((item, i) => (
+                  <label key={i} className="flex items-center justify-between cursor-pointer">
+                    <span className="text-sm">{item.label}</span>
+                    <div className={`w-10 h-6 rounded-full relative transition ${item.checked ? "bg-sky-500" : "bg-tertiary"}`}>
+                      <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition ${item.checked ? "right-1" : "left-1"}`}></div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-secondary border border-custom rounded-2xl p-5">
+              <h3 className="font-semibold mb-4">Account</h3>
+              <div className="space-y-2">
+                <button className="w-full text-left px-4 py-3 bg-tertiary rounded-xl text-sm hover:bg-slate-700 transition">Change Email</button>
+                <button className="w-full text-left px-4 py-3 bg-tertiary rounded-xl text-sm hover:bg-slate-700 transition">Change Password</button>
+                <button className="w-full text-left px-4 py-3 bg-tertiary rounded-xl text-sm text-rose-400 hover:bg-rose-500/10 transition">Delete Account</button>
+              </div>
             </div>
           </div>
         );
       }
 
       function App() {
+        const [darkMode, setDarkMode] = useState(true);
+        const [activeView, setActiveView] = useState("home");
         const [query, setQuery] = useState("");
-        const [weights, setWeights] = useState({
-          price: 0.3,
-          reviews: 0.3,
-          rating: 0.2,
-          delivery: 0.2
-        });
+        const [weights, setWeights] = useState({ price: 0.3, reviews: 0.3, rating: 0.2, delivery: 0.2 });
         const [loading, setLoading] = useState(false);
         const [error, setError] = useState(null);
         const [data, setData] = useState(null);
         const [selectedProductId, setSelectedProductId] = useState(null);
+        const [wishlist, setWishlist] = useState([]);
+        const [alerts, setAlerts] = useState([]);
+        const [searchHistory, setSearchHistory] = useState([]);
+        const [toast, setToast] = useState(null);
+        const [showFilters, setShowFilters] = useState(false);
+        const [filters, setFilters] = useState({
+          category: "all", minPrice: "", maxPrice: "", platforms: [], inStockOnly: false
+        });
+
+        useEffect(() => {
+          document.documentElement.classList.toggle("light-mode", !darkMode);
+        }, [darkMode]);
+
+        const showToast = useCallback((message, type) => {
+          setToast({ message, type });
+        }, []);
 
         const handleSearch = async (e) => {
-          e.preventDefault();
+          if (e) e.preventDefault();
           if (!query.trim()) return;
           setLoading(true);
           setError(null);
           setData(null);
+
+          setSearchHistory(prev => [{
+            query, date: new Date().toLocaleDateString(), results: 6
+          }, ...prev.slice(0, 9)]);
 
           try {
             const res = await fetch("/api/recommendations", {
@@ -324,283 +546,270 @@
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ query, weights })
             });
-            if (!res.ok) {
-              throw new Error("Request failed");
-            }
+            if (!res.ok) throw new Error("Request failed");
             const json = await res.json();
             setData(json);
-            if (json.products && json.products.length) {
-              setSelectedProductId(json.products[0].id);
-            }
+            if (json.products?.length) setSelectedProductId(json.products[0].id);
           } catch (err) {
             console.error(err);
             setError("Something went wrong. Please try again.");
+            showToast("Search failed. Please try again.", "error");
           } finally {
             setLoading(false);
           }
         };
 
-        const selectedProduct =
-          data?.products?.find((p) => p.id === selectedProductId) || null;
+        const addToWishlist = (item) => {
+          if (!wishlist.find(w => w.id === item.id)) {
+            setWishlist(prev => [...prev, item]);
+            showToast("Added to wishlist!", "success");
+          } else {
+            showToast("Already in wishlist", "info");
+          }
+        };
 
-        // Collect unique platforms from results
-        const platforms = data?.products
-          ? [...new Set(data.products.map((p) => p.platform))]
-          : [];
+        const removeFromWishlist = (index) => {
+          setWishlist(prev => prev.filter((_, i) => i !== index));
+          showToast("Removed from wishlist", "info");
+        };
+
+        const addAlert = (item) => {
+          setAlerts(prev => [...prev, { title: item.title, targetPrice: item.price, currentPrice: item.price, status: "Active" }]);
+          showToast("Price alert set!", "success");
+        };
+
+        const removeAlert = (index) => {
+          setAlerts(prev => prev.filter((_, i) => i !== index));
+        };
+
+        const clearHistory = () => setSearchHistory([]);
+
+        const rerunSearch = (q) => {
+          setQuery(q);
+          setActiveView("home");
+          setTimeout(() => handleSearch(), 100);
+        };
+
+        const selectedProduct = data?.products?.find(p => p.id === selectedProductId) || null;
+        const platforms = data?.products ? [...new Set(data.products.map(p => p.platform))] : [];
 
         return (
-          <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900">
-            <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-              {/* Header */}
-              <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-300 text-xs font-medium mb-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>Agentic AI • Multi‑Agent Orchestrated</span>
-                  </div>
-                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-sky-300 via-blue-400 to-violet-400 bg-clip-text text-transparent">
-                    BuyWise
-                  </h1>
-                  <p className="text-sm text-slate-400 mt-1 max-w-lg">
-                    AI agents search across <strong className="text-slate-200">Amazon, Flipkart, Croma, Reliance Digital</strong> and more — to find your perfect product.
-                  </p>
-                </div>
-                <div className="text-xs text-slate-500 md:text-right space-y-0.5">
-                  <div className="font-medium text-slate-400">Multi-website search powered by AI agents</div>
-                  <div>7 specialized agents • Any product category</div>
-                </div>
-              </header>
+          <div className="flex min-h-screen">
+            <Sidebar 
+              activeView={activeView} 
+              setActiveView={setActiveView}
+              searchHistory={searchHistory}
+              onSearchHistory={(q) => { setQuery(q); setActiveView("home"); setTimeout(() => handleSearch(), 100); }}
+              onThemeToggle={() => setDarkMode(!darkMode)}
+              darkMode={darkMode}
+            />
 
-              {/* Search + Weights */}
-              <section className="grid md:grid-cols-3 gap-4">
-                <form
-                  onSubmit={handleSearch}
-                  className="md:col-span-2 bg-slate-900/70 border border-slate-700/60 rounded-2xl p-5 space-y-3"
-                >
-                  <div className="text-xs uppercase tracking-widest text-slate-400 font-semibold mb-1">
-                    🔍 Search any product
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="text"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="e.g. best wireless earbuds under 3000, gaming laptop, running shoes..."
-                      className="flex-1 bg-slate-950/60 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 placeholder:text-slate-500 transition"
-                    />
-                    <button
-                      type="submit"
-                      disabled={loading || !query.trim()}
-                      className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-semibold hover:from-sky-400 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-sky-500/20"
-                    >
-                      {loading ? (
-                        <span className="flex items-center gap-2">
-                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Agents working...
-                        </span>
-                      ) : "Search & Optimize"}
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-slate-500">
-                    Agents will search across multiple e-commerce websites in real-time and optimize recommendations for your preferences.
-                  </p>
-                </form>
+            <main className="flex-1 p-6 overflow-y-auto">
+              {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-                <div className="bg-slate-900/70 border border-slate-700/60 rounded-2xl p-5 space-y-3">
-                  <div className="text-xs uppercase tracking-widest text-slate-400 font-semibold mb-1">
-                    ⚖️ Preference weights
-                  </div>
-                  <WeightSlider
-                    label="Price"
-                    icon="💰"
-                    color="emerald"
-                    value={weights.price}
-                    onChange={(v) => setWeights((w) => ({ ...w, price: v }))}
-                  />
-                  <WeightSlider
-                    label="Reviews"
-                    icon="💬"
-                    color="sky"
-                    value={weights.reviews}
-                    onChange={(v) => setWeights((w) => ({ ...w, reviews: v }))}
-                  />
-                  <WeightSlider
-                    label="Rating"
-                    icon="⭐"
-                    color="violet"
-                    value={weights.rating}
-                    onChange={(v) => setWeights((w) => ({ ...w, rating: v }))}
-                  />
-                  <WeightSlider
-                    label="Delivery"
-                    icon="🚚"
-                    color="amber"
-                    value={weights.delivery}
-                    onChange={(v) => setWeights((w) => ({ ...w, delivery: v }))}
-                  />
-                </div>
-              </section>
+              {activeView === "home" && (
+                <div className="max-w-5xl mx-auto space-y-6 fade-in">
+                  <header className="text-center py-6">
+                    <h1 className={`text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r ${darkMode ? "from-sky-300 via-blue-400 to-violet-400" : "from-sky-600 via-blue-700 to-violet-600"} bg-clip-text text-transparent`}>
+                      BuyWise
+                    </h1>
+                    <p className="text-sm text-muted mt-2">Find your perfect product with AI-powered recommendations</p>
+                  </header>
 
-              {/* Agent Progress */}
-              <AgentProgressBar loading={loading} />
-
-              {error && (
-                <div className="bg-rose-900/40 border border-rose-700/70 text-rose-100 text-xs rounded-xl px-4 py-3 flex items-center gap-2">
-                  <span>⚠️</span> {error}
-                </div>
-              )}
-
-              {/* Results */}
-              {data && (
-                <section className="space-y-5 fade-in">
-                  {/* Platforms searched */}
-                  {platforms.length > 0 && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Sources:</span>
-                      {platforms.map((p) => (
-                        <PlatformBadge key={p} platform={p} />
-                      ))}
-                      <span className="text-[11px] text-slate-500 ml-1">• {data.products?.length || 0} products found</span>
-                    </div>
-                  )}
-
-                  {/* Top 3 Picks */}
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <TopPickCard
-                      emoji="🥇"
-                      title="Best Overall"
-                      item={data.topPicks?.best_overall}
-                      accentColor="gold"
-                    />
-                    <TopPickCard
-                      emoji="💰"
-                      title="Best Budget"
-                      item={data.topPicks?.best_budget}
-                      accentColor="green"
-                    />
-                    <TopPickCard
-                      emoji="⭐"
-                      title="Premium Pick"
-                      item={data.topPicks?.premium_pick}
-                      accentColor="purple"
-                    />
-                  </div>
-
-                  {/* Table + Chart */}
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div className="md:col-span-2 bg-slate-900/70 border border-slate-700/60 rounded-2xl overflow-hidden">
-                      <div className="px-4 py-3 flex items-center justify-between border-b border-slate-800/70">
-                        <div className="text-xs uppercase tracking-widest text-slate-400 font-semibold">
-                          📊 Comparison table
-                        </div>
-                        <div className="text-[11px] text-slate-500">
-                          Click a row to inspect price trend
-                        </div>
+                  <form onSubmit={handleSearch} className="bg-secondary border border-custom rounded-2xl p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="flex-1 relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">🔍</span>
+                        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
+                          placeholder="What are you looking for? (e.g. laptop under 50k)"
+                          className="w-full pl-11 pr-4 py-3 bg-tertiary border border-custom rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 placeholder:text-muted" />
+                        {query && (
+                          <button type="button" onClick={() => setQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-primary">✕</button>
+                        )}
                       </div>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full text-xs">
-                          <thead className="bg-slate-900/90 border-b border-slate-800">
-                            <tr className="text-slate-400 text-[10px] uppercase tracking-widest">
-                              <th className="px-3 py-2.5 text-left">#</th>
-                              <th className="px-3 py-2.5 text-left">Product</th>
-                              <th className="px-3 py-2.5 text-left">Platform</th>
-                              <th className="px-3 py-2.5 text-right">Price</th>
-                              <th className="px-3 py-2.5 text-right">Rating</th>
-                              <th className="px-3 py-2.5 text-right">Delivery</th>
-                              <th className="px-3 py-2.5 text-right">Score</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {data.products?.map((p) => (
-                              <tr
-                                key={p.id}
-                                className={`border-b border-slate-800/50 cursor-pointer hover:bg-sky-500/5 transition-colors ${
-                                  p.id === selectedProductId
-                                    ? "bg-sky-500/10 border-l-2 border-l-sky-400"
-                                    : ""
-                                }`}
-                                onClick={() => setSelectedProductId(p.id)}
-                              >
-                                <td className="px-3 py-2.5 text-slate-500 font-mono">
-                                  {p.rank || "–"}
-                                </td>
-                                <td className="px-3 py-2.5">
-                                  <div className="flex flex-col">
-                                    <span className="text-xs font-medium text-slate-200">
-                                      {p.title}
-                                    </span>
-                                    <span className="text-[10px] text-slate-500 mt-0.5">
-                                      {p.warranty}
-                                      {p.price_intel?.buy_recommendation && (
-                                        <span className={`ml-2 font-semibold ${p.price_intel.buy_recommendation === "Buy" ? "text-emerald-400" : p.price_intel.buy_recommendation === "Wait" ? "text-amber-400" : "text-slate-400"}`}>
-                                          {p.price_intel.buy_recommendation === "Buy" ? "🟢 Buy now" : p.price_intel.buy_recommendation === "Wait" ? "🟡 Wait" : "⚪ Neutral"}
-                                        </span>
-                                      )}
-                                    </span>
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2.5">
-                                  <PlatformBadge platform={p.platform} />
-                                </td>
-                                <td className="px-3 py-2.5 text-right">
-                                  <div className="flex flex-col items-end">
-                                    <span className="font-semibold text-slate-200 tabular-nums">₹{p.price.toLocaleString()}</span>
-                                    {p.original_price > p.price && (
-                                      <span className="text-[10px] text-slate-500 line-through">₹{p.original_price.toLocaleString()}</span>
-                                    )}
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2.5 text-right text-slate-300">
-                                  ⭐ {p.seller_rating}
-                                </td>
-                                <td className="px-3 py-2.5 text-right text-slate-300">
-                                  {p.delivery_days}d
-                                </td>
-                                <td className="px-3 py-2.5 text-right font-bold text-sky-400 tabular-nums">
-                                  {p.smart_score}
-                                </td>
-                              </tr>
+                      <button type="button" onClick={() => setShowFilters(!showFilters)}
+                        className={`px-4 py-2 rounded-xl border text-sm transition ${showFilters ? "bg-sky-500/20 border-sky-500/50 accent-sky" : "bg-tertiary border-custom text-secondary hover:border-sky-500/30"}`}>
+                        Filters
+                      </button>
+                      <button type="submit" disabled={loading || !query.trim()}
+                        className="px-6 py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 rounded-xl text-sm font-semibold hover:from-sky-400 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-sky-500/20">
+                        {loading ? <span className="flex items-center gap-2"><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Searching...</span> : "Search"}
+                      </button>
+                    </div>
+
+                    {showFilters && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-custom fade-in">
+                        <div>
+                          <label className="text-xs text-muted uppercase tracking-wide mb-1 block">Category</label>
+                          <select value={filters.category} onChange={(e) => setFilters(f => ({ ...f, category: e.target.value }))}
+                            className="w-full px-3 py-2 bg-tertiary border border-custom rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted uppercase tracking-wide mb-1 block">Platform</label>
+                          <div className="flex flex-wrap gap-2">
+                            {PLATFORMS.map(p => (
+                              <button key={p} type="button" onClick={() => setFilters(f => ({
+                                ...f, platforms: f.platforms.includes(p) ? f.platforms.filter(x => x !== p) : [...f.platforms, p]
+                              }))}
+                                className={`px-3 py-1 rounded-lg text-xs border transition ${filters.platforms.includes(p) ? "bg-sky-500/20 border-sky-500/50 accent-sky" : "bg-tertiary border-custom text-muted hover:border-sky-500/30"}`}>
+                                {p}
+                              </button>
                             ))}
-                          </tbody>
-                        </table>
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <div className="flex-1">
+                            <label className="text-xs text-muted uppercase tracking-wide mb-1 block">Min Price (₹)</label>
+                            <input type="number" value={filters.minPrice} onChange={(e) => setFilters(f => ({ ...f, minPrice: e.target.value }))}
+                              placeholder="0" className="w-full px-3 py-2 bg-tertiary border border-custom rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                          </div>
+                          <div className="flex-1">
+                            <label className="text-xs text-muted uppercase tracking-wide mb-1 block">Max Price (₹)</label>
+                            <input type="number" value={filters.maxPrice} onChange={(e) => setFilters(f => ({ ...f, maxPrice: e.target.value }))}
+                              placeholder="100000" className="w-full px-3 py-2 bg-tertiary border border-custom rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={filters.inStockOnly} onChange={(e) => setFilters(f => ({ ...f, inStockOnly: e.target.checked }))}
+                              className="w-4 h-4 rounded accent-sky" />
+                            <span className="text-sm">In Stock Only</span>
+                          </label>
+                        </div>
                       </div>
-                    </div>
+                    )}
+                  </form>
 
-                    <PriceChart product={selectedProduct} />
-                  </div>
+                  <AgentProgressBar loading={loading} />
 
-                  {/* Explanation Section */}
-                  {data.explanation && data.explanation.reasoning && (
-                    <div className="bg-slate-900/70 border border-slate-700/60 rounded-2xl p-5 fade-in">
-                      <h3 className="text-sm font-semibold mb-3 text-slate-200 flex items-center gap-2">
-                        <span>🧾</span> Why these recommendations?
-                      </h3>
-                      <ul className="space-y-2.5">
-                        {data.explanation.reasoning.map((reason, idx) => (
-                          <li
-                            key={idx}
-                            className="text-xs text-slate-300 flex items-start"
-                          >
-                            <span className="mr-2 text-sky-400 mt-0.5 flex-shrink-0">▸</span>
-                            <span>{reason}</span>
-                          </li>
-                        ))}
-                      </ul>
+                  {error && (
+                    <div className="bg-rose-900/40 border border-rose-700/70 text-rose-100 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
+                      <span>⚠️</span> {error}
                     </div>
                   )}
-                </section>
+
+                  {data && (
+                    <section className="space-y-5 fade-in">
+                      {platforms.length > 0 && (
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="text-[11px] uppercase tracking-widest text-muted font-semibold">Sources:</span>
+                          {platforms.map(p => <PlatformBadge key={p} platform={p} />)}
+                          <span className="text-[11px] text-muted ml-2">• {data.products?.length || 0} products</span>
+                        </div>
+                      )}
+
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <TopPickCard emoji="🥇" title="Best Overall" item={data.topPicks?.best_overall} accentColor="gold" onAddToWishlist={addToWishlist} />
+                        <TopPickCard emoji="💰" title="Best Budget" item={data.topPicks?.best_budget} accentColor="green" onAddToWishlist={addToWishlist} />
+                        <TopPickCard emoji="⭐" title="Premium Pick" item={data.topPicks?.premium_pick} accentColor="purple" onAddToWishlist={addToWishlist} />
+                      </div>
+
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div className="md:col-span-2 bg-secondary border border-custom rounded-2xl overflow-hidden">
+                          <div className="px-4 py-3 flex items-center justify-between border-b border-custom">
+                            <div className="text-xs uppercase tracking-widest text-secondary font-semibold">📊 Comparison</div>
+                            <button onClick={() => addAlert(selectedProduct)} className="text-[11px] accent-sky hover:text-sky-300">Set Alert</button>
+                          </div>
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full text-xs">
+                              <thead className="bg-tertiary border-b border-custom">
+                                <tr className="text-muted text-[10px] uppercase tracking-widest">
+                                  <th className="px-3 py-2.5 text-left">#</th>
+                                  <th className="px-3 py-2.5 text-left">Product</th>
+                                  <th className="px-3 py-2.5 text-left">Platform</th>
+                                  <th className="px-3 py-2.5 text-right">Price</th>
+                                  <th className="px-3 py-2.5 text-right">Rating</th>
+                                  <th className="px-3 py-2.5 text-right">Score</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {data.products?.map(p => (
+                                  <tr key={p.id} onClick={() => setSelectedProductId(p.id)}
+                                    className={`border-b border-custom/50 cursor-pointer hover:bg-sky-500/5 transition ${p.id === selectedProductId ? "bg-sky-500/10 border-l-2 border-l-sky-400" : ""}`}>
+                                    <td className="px-3 py-2.5 text-muted font-mono">{p.rank || "–"}</td>
+                                    <td className="px-3 py-2.5">
+                                      <div className="font-medium text-sm line-clamp-1">{p.title}</div>
+                                      <div className="text-[10px] text-muted mt-0.5">
+                                        {p.warranty}
+                                        {p.price_intel?.buy_recommendation && (
+                                          <span className={`ml-2 font-semibold ${p.price_intel.buy_recommendation === "Buy" ? "accent-emerald" : p.price_intel.buy_recommendation === "Wait" ? "accent-amber" : "text-muted"}`}>
+                                            {p.price_intel.buy_recommendation === "Buy" ? "🟢 Buy" : p.price_intel.buy_recommendation === "Wait" ? "🟡 Wait" : ""}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td className="px-3 py-2.5"><PlatformBadge platform={p.platform} /></td>
+                                    <td className="px-3 py-2.5 text-right">
+                                      <span className="font-semibold">₹{p.price.toLocaleString()}</span>
+                                      {p.original_price > p.price && <span className="text-[10px] text-muted line-through ml-1">₹{p.original_price.toLocaleString()}</span>}
+                                    </td>
+                                    <td className="px-3 py-2.5 text-right">⭐ {p.seller_rating}</td>
+                                    <td className="px-3 py-2.5 text-right font-bold accent-sky">{p.smart_score}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        <PriceChart product={selectedProduct} />
+                      </div>
+
+                      {data.explanation?.reasoning && (
+                        <div className="bg-secondary border border-custom rounded-2xl p-5 fade-in">
+                          <h3 className="text-sm font-semibold mb-3 text-primary flex items-center gap-2">🧾 Why these recommendations?</h3>
+                          <ul className="space-y-2.5">
+                            {data.explanation.reasoning.map((reason, idx) => (
+                              <li key={idx} className="text-xs text-secondary flex items-start">
+                                <span className="mr-2 accent-sky mt-0.5">▸</span>
+                                <span>{reason}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </section>
+                  )}
+
+                  {!data && !loading && (
+                    <EmptyState icon="🔍" title="Start searching" message="Enter a product query above to get AI-powered recommendations from multiple e-commerce platforms." />
+                  )}
+                </div>
               )}
 
-              {/* Footer */}
-              <footer className="text-center py-6 border-t border-slate-800/50 mt-8">
-                <p className="text-[11px] text-slate-600">
-                  BuyWise • Multi-Agent AI Buying Assistant • Powered by 7 specialized agents
-                </p>
+              {activeView === "wishlist" && (
+                <div className="max-w-5xl mx-auto fade-in">
+                  <h2 className="text-2xl font-bold mb-6">❤️ Wishlist</h2>
+                  <WishlistView wishlist={wishlist} onRemove={removeFromWishlist} />
+                </div>
+              )}
+
+              {activeView === "alerts" && (
+                <div className="max-w-3xl mx-auto fade-in">
+                  <h2 className="text-2xl font-bold mb-6">🔔 Price Alerts</h2>
+                  <AlertsView alerts={alerts} onRemove={removeAlert} />
+                </div>
+              )}
+
+              {activeView === "history" && (
+                <div className="max-w-3xl mx-auto fade-in">
+                  <h2 className="text-2xl font-bold mb-6">🕐 Search History</h2>
+                  <HistoryView history={searchHistory} onRerun={rerunSearch} onClear={clearHistory} />
+                </div>
+              )}
+
+              {activeView === "settings" && (
+                <div className="fade-in">
+                  <h2 className="text-2xl font-bold mb-6">⚙️ Settings</h2>
+                  <SettingsView />
+                </div>
+              )}
+
+              <footer className="text-center py-8 mt-12 border-t border-custom">
+                <p className="text-[11px] text-muted">BuyWise • Multi-Agent AI Buying Assistant • Powered by 7 specialized agents</p>
               </footer>
-            </div>
+            </main>
           </div>
         );
       }
