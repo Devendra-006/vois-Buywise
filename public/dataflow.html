@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>BuyWise – Interactive Data Flow Diagram</title>
+    <meta name="description"
+        content="Interactive data flow diagram for the BuyWise multi-agent AI buying assistant pipeline." />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-dark: #0a0e1a;
+            --bg-card: rgba(15, 23, 42, 0.7);
+            --border-subtle: rgba(51, 65, 85, 0.5);
+            --sky-400: #38bdf8;
+            --sky-500: #0ea5e9;
+            --violet-400: #a78bfa;
+            --amber-400: #fbbf24;
+            --emerald-400: #34d399;
+            --rose-400: #fb7185;
+            --pink-400: #f472b6;
+            --cyan-400: #22d3ee;
+            --orange-400: #fb923c;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: #e2e8f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(56, 189, 248, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(167, 139, 250, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #7dd3fc;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        .header-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--emerald-400);
+            animation: pulse-dot 1.5s ease-in-out infinite;
+        }
+
+        .header h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #7dd3fc 0%, #818cf8 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 2rem;
+            left: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--sky-400);
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-card);
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: all 0.25s;
+            backdrop-filter: blur(8px);
+        }
+
+        .btn:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            color: var(--sky-400);
+            background: rgba(56, 189, 248, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .btn.active {
+            border-color: var(--sky-500);
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--sky-400);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.1);
+        }
+
+        /* Diagram Canvas */
+        .diagram-canvas {
+            position: relative;
+            width: 100%;
+            min-height: 700px;
+        }
+
+        /* SVG connections */
+        .connections-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .connection-path {
+            fill: none;
+            stroke: rgba(56, 189, 248, 0.2);
+            stroke-width: 2;
+            stroke-dasharray: 8 4;
+            transition: stroke 0.3s, stroke-width 0.3s;
+        }
+
+        .connection-path.active {
+            stroke: var(--sky-400);
+            stroke-width: 2.5;
+            filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.3));
+        }
+
+        /* Animated particle along path */
+        .flow-particle {
+            fill: var(--sky-400);
+            filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.6));
+        }
+
+        /* Agent Nodes */
+        .node {
+            position: absolute;
+            z-index: 2;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+        }
+
+        .node:hover {
+            transform: scale(1.04) translateY(-3px);
+        }
+
+        .node.highlighted {
+            transform: scale(1.06) translateY(-4px);
+            z-index: 10;
+        }
+
+        .node-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .node:hover .node-card,
+        .node.highlighted .node-card {
+            border-color: var(--node-color, var(--sky-400));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 40px color-mix(in srgb, var(--node-color, var(--sky-400)) 15%, transparent);
+        }
+
+        .node-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--node-color, var(--sky-400));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .node:hover .node-card::before,
+        .node.highlighted .node-card::before {
+            opacity: 1;
+        }
+
+        .node-icon {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .node-step {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--node-color, var(--sky-400));
+            margin-bottom: 0.25rem;
+        }
+
+        .node-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            line-height: 1.3;
+        }
+
+        .node-subtitle {
+            font-size: 0.65rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+
+        .node-file {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: #475569;
+            margin-top: 0.35rem;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.25rem;
+            display: inline-block;
+        }
+
+        /* Detail Panel */
+        .detail-panel {
+            position: fixed;
+            top: 0;
+            right: -480px;
+            width: 450px;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #0a0e1a 100%);
+            border-left: 1px solid var(--border-subtle);
+            z-index: 100;
+            transition: right 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            overflow-y: auto;
+            padding: 2rem 1.75rem;
+            backdrop-filter: blur(20px);
+        }
+
+        .detail-panel.open {
+            right: 0;
+        }
+
+        .detail-panel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .detail-panel-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .detail-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-card);
+            color: #94a3b8;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .detail-close:hover {
+            border-color: var(--rose-400);
+            color: var(--rose-400);
+            background: rgba(251, 113, 133, 0.1);
+        }
+
+        .detail-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-step {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-role {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 1.25rem;
+            font-style: italic;
+        }
+
+        .detail-section {
+            margin-bottom: 1.25rem;
+        }
+
+        .detail-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .detail-text {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .detail-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .detail-list li {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            padding: 0.3rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .detail-list li::before {
+            content: '▸';
+            color: var(--node-color, var(--sky-400));
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .detail-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.35rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            color: var(--sky-400);
+            margin: 0.15rem;
+        }
+
+        .detail-tag.llm {
+            background: rgba(167, 139, 250, 0.08);
+            border-color: rgba(167, 139, 250, 0.2);
+            color: var(--violet-400);
+        }
+
+        .detail-tag.math {
+            background: rgba(52, 211, 153, 0.08);
+            border-color: rgba(52, 211, 153, 0.2);
+            color: var(--emerald-400);
+        }
+
+        .io-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-subtle);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .io-box-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.3rem;
+        }
+
+        .io-box-label.input {
+            color: var(--amber-400);
+        }
+
+        .io-box-label.output {
+            color: var(--emerald-400);
+        }
+
+        .io-box-content {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.7rem;
+            color: #64748b;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-line {
+            width: 24px;
+            height: 2px;
+            border-radius: 2px;
+        }
+
+        /* Animations */
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        @keyframes dash-flow {
+            to {
+                stroke-dashoffset: -24;
+            }
+        }
+
+        .animated .connection-path {
+            animation: dash-flow 1.5s linear infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .diagram-canvas {
+                min-height: 1200px;
+            }
+
+            .node-card {
+                min-width: 140px;
+                padding: 0.75rem 1rem;
+            }
+
+            .node-title {
+                font-size: 0.75rem;
+            }
+
+            .detail-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
+            .controls {
+                gap: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to BuyWise</a>
+
+        <div class="header">
+            <div class="header-badge">
+                <span class="dot"></span>
+                <span>Multi-Agent Architecture</span>
+            </div>
+            <h1>Data Flow Diagram</h1>
+            <p>Click any agent to explore its role, inputs, outputs, and connections in the BuyWise pipeline.</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn active" id="btn-animate" onclick="toggleAnimation()">
+                <span>⚡</span> Animate Flow
+            </button>
+            <button class="btn" id="btn-simulate" onclick="simulateFlow()">
+                <span>▶️</span> Simulate Pipeline
+            </button>
+            <button class="btn" onclick="resetView()">
+                <span>🔄</span> Reset
+            </button>
+        </div>
+
+        <div class="diagram-canvas" id="diagram">
+            <svg class="connections-svg animated" id="connections-svg"></svg>
+            <!-- Nodes will be injected by JS -->
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--sky-400)"></div>
+                <span>Orchestration</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--violet-400)"></div>
+                <span>LLM-Powered Agent</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--emerald-400)"></div>
+                <span>Algorithmic Agent</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--amber-400)"></div>
+                <span>User Interface</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-line" style="background: rgba(56,189,248,0.3)"></div>
+                <span>Data Flow</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="detail-panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
+    <div class="detail-panel" id="detail-panel">
+        <button class="detail-close" onclick="closePanel()">✕</button>
+        <div id="panel-content"></div>
+    </div>
+
+    <script>
+        // Agent data
+        const agents = [
+            {
+                id: 'user-ui',
+                icon: '🧑‍💻',
+                step: 'Start',
+                title: 'User Interface',
+                subtitle: 'Query + Preferences',
+                file: 'public/index.html',
+                color: 'var(--amber-400)',
+                role: 'Frontend — Where the user interacts with BuyWise',
+                description: 'The user enters a natural language query describing what they want (e.g. "best wireless earbuds under 3000 for gym") and adjusts weight sliders for Price, Reviews, Rating, and Delivery speed.',
+                inputs: ['User types a natural language product query', 'Adjusts 4 weight sliders (0–1 each)'],
+                outputs: ['POST /api/recommendations', '{ query, weights: { price, reviews, rating, delivery } }'],
+                details: ['Built with React 18 + Tailwind CSS', 'Weight sliders let users personalize results', 'Shows animated agent pipeline progress', 'Displays Top 3 picks, comparison table, and price charts'],
+                tags: ['React 18', 'Tailwind CSS', 'Chart.js'],
+                tagType: 'default'
+            },
+            {
+                id: 'supervisor',
+                icon: '🧠',
+                step: 'Step 1',
+                title: 'Supervisor Agent',
+                subtitle: 'Orchestrator',
+                file: 'supervisorAgent.js',
+                color: 'var(--sky-400)',
+                role: 'Orchestrator — The "brain" coordinating all agents',
+                description: 'Receives the user query and weight preferences, breaks the task into subtasks, and triggers each agent in the correct sequence. Collects outputs and assembles the final response.',
+                inputs: ['User query (string)', 'Weight preferences (object)', 'User profile (optional)'],
+                outputs: ['Complete recommendation response with products, topPicks, and explanation'],
+                details: ['Never generates product data itself', 'Only coordinates and passes structured data', 'Executes agents in strict sequential order', 'Aggregates outputs from all 7 sub-agents'],
+                tags: ['Orchestrator', 'Sequential Pipeline'],
+                tagType: 'default'
+            },
+            {
+                id: 'web-search',
+                icon: '🌐',
+                step: 'Step 2',
+                title: 'Web Search Agent',
+                subtitle: 'Multi-Website Searcher',
+                file: 'webSearchAgent.js',
+                color: 'var(--violet-400)',
+                role: 'Multi-website product searcher — The "eyes" of the system',
+                description: 'Uses OpenRouter LLM to search across multiple e-commerce platforms. The LLM generates realistic product listings from Amazon, Flipkart, Croma, Reliance Digital, Myntra, and more.',
+                inputs: ['User query (string)', 'Product category context'],
+                outputs: ['Array of 5–8 products with: platform, title, brand, price, MRP, rating, delivery time, warranty, price history, review snippets'],
+                details: ['Searches Amazon, Flipkart, Croma, Reliance Digital, Myntra, Nykaa', 'LLM-based search avoids API/scraping issues', 'Works for any product category', 'Detailed prompt engineering for realistic results'],
+                tags: ['OpenRouter LLM', 'Multi-platform'],
+                tagType: 'llm'
+            },
+            {
+                id: 'product-retrieval',
+                icon: '📦',
+                step: 'Step 3',
+                title: 'Product Retrieval Agent',
+                subtitle: 'Parser & Normalizer',
+                file: 'productRetrievalAgent.js',
+                color: 'var(--violet-400)',
+                role: 'Parser and validator — Ensures data quality',
+                description: 'Calls the Web Search Agent to get raw product data, then validates and normalizes every field. Fills missing fields with defaults and falls back to mock data if the LLM call fails.',
+                inputs: ['Raw product data from Web Search Agent'],
+                outputs: ['Clean, validated array of product objects with all required fields'],
+                details: ['Validates: price is number, rating is 0–5, etc.', 'Fills missing fields with sensible defaults', 'Falls back to mock data on LLM failure', 'Deduplicates products across platforms'],
+                tags: ['Validation', 'Normalization', 'Fallback'],
+                tagType: 'default'
+            },
+            {
+                id: 'review-intel',
+                icon: '💬',
+                step: 'Step 4',
+                title: 'Review Intelligence',
+                subtitle: 'Sentiment Analyzer',
+                file: 'reviewIntelligenceAgent.js',
+                color: 'var(--violet-400)',
+                role: 'Sentiment analyzer — Extracts insights from reviews',
+                description: 'Uses the OpenRouter LLM to analyze review snippets for each product. Extracts structured insights including pros, cons, sentiment scores, and durability assessments.',
+                inputs: ['Product list with review snippets from Step 3'],
+                outputs: ['Per-product: top 5 pros, top 5 cons, sentiment score (0–10), common complaints, durability (Low/Medium/High)'],
+                details: ['LLM-powered sentiment analysis', 'Objective — no exaggeration or purchase advice', 'Heuristic-based fallback if LLM unavailable', 'Identifies most frequent complaints'],
+                tags: ['OpenRouter LLM', 'Sentiment Analysis'],
+                tagType: 'llm'
+            },
+            {
+                id: 'price-intel',
+                icon: '💰',
+                step: 'Step 5',
+                title: 'Price Intelligence',
+                subtitle: 'Discount Analyzer',
+                file: 'priceIntelligenceAgent.js',
+                color: 'var(--emerald-400)',
+                role: 'Discount analyzer — Determines if a deal is genuine',
+                description: 'A purely mathematical agent. Compares current price vs. original MRP vs. historical average to calculate discount authenticity, price fairness, and buy/wait recommendations.',
+                inputs: ['Product list with price, original_price, and historical_price from Step 3'],
+                outputs: ['Per-product: discount authentic (bool), fairness score (0–10), buy recommendation (Buy/Wait/Neutral), price risk (Low/Medium/High)'],
+                details: ['No LLM calls — purely mathematical', 'Based only on numerical data', 'Compares current vs. original vs. historical prices', 'Assesses risk of future price increases'],
+                tags: ['Algorithmic', 'No LLM'],
+                tagType: 'math'
+            },
+            {
+                id: 'scoring',
+                icon: '⚖️',
+                step: 'Step 6',
+                title: 'Scoring & Personalization',
+                subtitle: 'Weighted Ranker',
+                file: 'scoringAgent.js',
+                color: 'var(--emerald-400)',
+                role: 'Weighted ranker — Applies user preferences',
+                description: 'Normalizes all scores to 0–10, applies the weighted formula using user slider preferences, and generates a final Smart Score (0–100) for each product.',
+                inputs: ['Products (Step 3)', 'Review insights (Step 4)', 'Price intelligence (Step 5)', 'User weight preferences'],
+                outputs: ['Ranked product list with Smart Scores (0–100)'],
+                details: [
+                    'Formula: Smart Score = (price × w_price) + (sentiment × w_reviews) + (rating × w_rating) + (delivery × w_delivery)',
+                    'All inputs normalized to 0–10 scale',
+                    'Result multiplied by 10 for 0–100 range',
+                    'Products ranked highest to lowest'
+                ],
+                tags: ['Algorithmic', 'Weighted Formula'],
+                tagType: 'math'
+            },
+            {
+                id: 'decision',
+                icon: '🎯',
+                step: 'Step 7',
+                title: 'Decision Simplification',
+                subtitle: 'Top 3 Selector',
+                file: 'decisionSimplificationAgent.js',
+                color: 'var(--emerald-400)',
+                role: 'Choice reducer — Eliminates decision fatigue',
+                description: 'Selects exactly 3 products from the ranked list: Best Overall (highest score), Best Budget (cheapest with acceptable quality), and Premium Pick (highest rating + features).',
+                inputs: ['Full ranked product list with Smart Scores from Step 6'],
+                outputs: ['3 picks: 🥇 Best Overall, 💰 Best Budget, ⭐ Premium Pick — each with 2 reasons + 1 trade-off'],
+                details: ['Best Overall → Highest Smart Score', 'Best Budget → Lowest price with acceptable score', 'Premium Pick → Highest rating + premium features', 'Max 3 options, concise, no marketing language'],
+                tags: ['Selection Logic', 'No LLM'],
+                tagType: 'math'
+            },
+            {
+                id: 'explanation',
+                icon: '🧾',
+                step: 'Step 8',
+                title: 'Explanation Agent',
+                subtitle: 'Reasoning Layer',
+                file: 'explanationAgent.js',
+                color: 'var(--emerald-400)',
+                role: 'Transparency layer — Builds user trust',
+                description: 'Generates 5 human-readable bullet points explaining why picks were selected, what trade-offs to consider, and a final recommendation aligned with user priorities.',
+                inputs: ['Top 3 picks + full scored list from Steps 6 & 7'],
+                outputs: ['Array of 5 reasoning strings in plain language'],
+                details: ['Explains why Best Overall was chosen', 'Explains why others were not top', 'Highlights trade-offs to consider', 'Max 5 bullet points, simple language, no technical math'],
+                tags: ['Reasoning', 'Transparency'],
+                tagType: 'default'
+            },
+            {
+                id: 'api-response',
+                icon: '📡',
+                step: 'Output',
+                title: 'Final API Response',
+                subtitle: 'JSON → UI',
+                file: 'index.js',
+                color: 'var(--amber-400)',
+                role: 'API Response — Final structured output',
+                description: 'The complete JSON response sent back to the frontend, containing the full ranked product list, top 3 picks with reasoning, and transparent explanation bullets.',
+                inputs: ['Aggregated output from all agents via Supervisor'],
+                outputs: ['{ query, weights, products[], topPicks: { best_overall, best_budget, premium_pick }, explanation: { reasoning[] } }'],
+                details: ['Complete product data with Smart Scores', 'Top 3 picks with why_selected and trade_offs', '5 reasoning strings for transparency', 'Rendered as cards, tables, and charts in the UI'],
+                tags: ['REST API', 'JSON'],
+                tagType: 'default'
+            }
+        ];
+
+        // Connections between agents (source_id → target_id)
+        const connections = [
+            { from: 'user-ui', to: 'supervisor' },
+            { from: 'supervisor', to: 'web-search' },
+            { from: 'web-search', to: 'product-retrieval' },
+            { from: 'product-retrieval', to: 'review-intel' },
+            { from: 'product-retrieval', to: 'price-intel' },
+            { from: 'review-intel', to: 'scoring' },
+            { from: 'price-intel', to: 'scoring' },
+            { from: 'scoring', to: 'decision' },
+            { from: 'decision', to: 'explanation' },
+            { from: 'explanation', to: 'api-response' },
+            { from: 'api-response', to: 'user-ui' }
+        ];
+
+        // Node positions (percentage-based for responsiveness)
+        const nodePositions = {
+            'user-ui': { x: 50, y: 0 },
+            'supervisor': { x: 50, y: 10 },
+            'web-search': { x: 50, y: 22 },
+            'product-retrieval': { x: 50, y: 34 },
+            'review-intel': { x: 25, y: 47 },
+            'price-intel': { x: 75, y: 47 },
+            'scoring': { x: 50, y: 60 },
+            'decision': { x: 50, y: 72 },
+            'explanation': { x: 50, y: 84 },
+            'api-response': { x: 50, y: 96 }
+        };
+
+        let isAnimated = true;
+        let simulationTimer = null;
+
+        // Initialize diagram
+        function init() {
+            const diagram = document.getElementById('diagram');
+            // Create nodes
+            agents.forEach(agent => {
+                const pos = nodePositions[agent.id];
+                const node = document.createElement('div');
+                node.className = 'node';
+                node.id = `node-${agent.id}`;
+                node.style.cssText = `--node-color: ${agent.color}; left: ${pos.x}%; top: ${pos.y}%; transform: translateX(-50%);`;
+                node.onclick = () => openPanel(agent);
+
+                node.innerHTML = `
+            <div class="node-card">
+              <span class="node-icon">${agent.icon}</span>
+              <div class="node-step" style="color: ${agent.color}">${agent.step}</div>
+              <div class="node-title">${agent.title}</div>
+              <div class="node-subtitle">${agent.subtitle}</div>
+              <div class="node-file">${agent.file}</div>
+            </div>
+          `;
+                diagram.appendChild(node);
+            });
+
+            // Draw connections after nodes are rendered
+            requestAnimationFrame(() => {
+                requestAnimationFrame(drawConnections);
+            });
+
+            // Redraw on resize
+            window.addEventListener('resize', drawConnections);
+        }
+
+        function drawConnections() {
+            const svg = document.getElementById('connections-svg');
+            const diagram = document.getElementById('diagram');
+            const rect = diagram.getBoundingClientRect();
+
+            svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+            svg.innerHTML = '<defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="rgba(56,189,248,0.4)" /></marker></defs>';
+
+            connections.forEach((conn, idx) => {
+                const fromEl = document.getElementById(`node-${conn.from}`);
+                const toEl = document.getElementById(`node-${conn.to}`);
+                if (!fromEl || !toEl) return;
+
+                const fromRect = fromEl.getBoundingClientRect();
+                const toRect = toEl.getBoundingClientRect();
+
+                const fromX = fromRect.left + fromRect.width / 2 - rect.left;
+                const fromY = fromRect.top + fromRect.height - rect.top;
+                const toX = toRect.left + toRect.width / 2 - rect.left;
+                const toY = toRect.top - rect.top;
+
+                // Special case: last connection (api-response → user-ui) goes up
+                let d;
+                if (conn.from === 'api-response') {
+                    const midX = rect.width - 30;
+                    d = `M ${fromX} ${fromY - 20} C ${midX} ${fromY - 20}, ${midX} ${toY + 20}, ${toX + fromRect.width / 2 + 15} ${toY + 20}`;
+                } else {
+                    const midY = (fromY + toY) / 2;
+                    d = `M ${fromX} ${fromY} C ${fromX} ${midY}, ${toX} ${midY}, ${toX} ${toY}`;
+                }
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', d);
+                path.setAttribute('class', 'connection-path');
+                path.setAttribute('id', `conn-${conn.from}-${conn.to}`);
+                path.setAttribute('marker-end', 'url(#arrowhead)');
+                svg.appendChild(path);
+
+                // Animated particle
+                if (isAnimated && conn.from !== 'api-response') {
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('r', '3');
+                    circle.setAttribute('class', 'flow-particle');
+                    const anim = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion');
+                    anim.setAttribute('dur', '3s');
+                    anim.setAttribute('repeatCount', 'indefinite');
+                    anim.setAttribute('begin', `${idx * 0.3}s`);
+                    const mpath = document.createElementNS('http://www.w3.org/2000/svg', 'mpath');
+                    mpath.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#conn-${conn.from}-${conn.to}`);
+                    anim.appendChild(mpath);
+                    circle.appendChild(anim);
+                    svg.appendChild(circle);
+                }
+            });
+        }
+
+        function openPanel(agent) {
+            const panel = document.getElementById('detail-panel');
+            const overlay = document.getElementById('panel-overlay');
+            const content = document.getElementById('panel-content');
+
+            // Highlight node
+            document.querySelectorAll('.node').forEach(n => n.classList.remove('highlighted'));
+            document.getElementById(`node-${agent.id}`)?.classList.add('highlighted');
+
+            // Highlight connections
+            document.querySelectorAll('.connection-path').forEach(p => p.classList.remove('active'));
+            connections.forEach(conn => {
+                if (conn.from === agent.id || conn.to === agent.id) {
+                    document.getElementById(`conn-${conn.from}-${conn.to}`)?.classList.add('active');
+                }
+            });
+
+            const tagClass = agent.tagType === 'llm' ? 'llm' : agent.tagType === 'math' ? 'math' : '';
+
+            content.innerHTML = `
+          <div class="detail-icon">${agent.icon}</div>
+          <div class="detail-step" style="color: ${agent.color}">${agent.step}</div>
+          <div class="detail-title">${agent.title}</div>
+          <div class="detail-role">${agent.role}</div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">📋 Description</div>
+            <p class="detail-text">${agent.description}</p>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">🔗 File</div>
+            <div style="margin-bottom: 0.5rem;">
+              <span class="detail-tag">${agent.file}</span>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">🏷️ Tags</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+              ${agent.tags.map(t => `<span class="detail-tag ${tagClass}">${t}</span>`).join('')}
+            </div>
+          </div>
+
+          <div class="io-box">
+            <div class="io-box-label input">📥 Inputs</div>
+            <ul class="detail-list" style="--node-color: ${agent.color}">
+              ${agent.inputs.map(i => `<li>${i}</li>`).join('')}
+            </ul>
+          </div>
+
+          <div class="io-box">
+            <div class="io-box-label output">📤 Outputs</div>
+            <ul class="detail-list" style="--node-color: var(--emerald-400)">
+              ${agent.outputs.map(o => `<li>${o}</li>`).join('')}
+            </ul>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">⚙️ Key Details</div>
+            <ul class="detail-list" style="--node-color: ${agent.color}">
+              ${agent.details.map(d => `<li>${d}</li>`).join('')}
+            </ul>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-title">🔄 Connected To</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+              ${getConnectedAgents(agent.id).map(a => `<span class="detail-tag" style="cursor:pointer" onclick="openPanelById('${a.id}')">${a.icon} ${a.title}</span>`).join('')}
+            </div>
+          </div>
+        `;
+
+            panel.style.setProperty('--node-color', agent.color);
+            panel.classList.add('open');
+            overlay.classList.add('open');
+        }
+
+        function openPanelById(id) {
+            const agent = agents.find(a => a.id === id);
+            if (agent) openPanel(agent);
+        }
+
+        function getConnectedAgents(id) {
+            const connected = new Set();
+            connections.forEach(conn => {
+                if (conn.from === id) connected.add(conn.to);
+                if (conn.to === id) connected.add(conn.from);
+            });
+            return agents.filter(a => connected.has(a.id));
+        }
+
+        function closePanel() {
+            document.getElementById('detail-panel').classList.remove('open');
+            document.getElementById('panel-overlay').classList.remove('open');
+            document.querySelectorAll('.node').forEach(n => n.classList.remove('highlighted'));
+            document.querySelectorAll('.connection-path').forEach(p => p.classList.remove('active'));
+        }
+
+        function toggleAnimation() {
+            isAnimated = !isAnimated;
+            const btn = document.getElementById('btn-animate');
+            const svg = document.getElementById('connections-svg');
+            btn.classList.toggle('active', isAnimated);
+            svg.classList.toggle('animated', isAnimated);
+            drawConnections();
+        }
+
+        function simulateFlow() {
+            const btn = document.getElementById('btn-simulate');
+            if (simulationTimer) {
+                clearSimulation();
+                return;
+            }
+
+            btn.classList.add('active');
+            btn.innerHTML = '<span>⏹</span> Stop Simulation';
+
+            const order = ['user-ui', 'supervisor', 'web-search', 'product-retrieval', 'review-intel', 'price-intel', 'scoring', 'decision', 'explanation', 'api-response'];
+            let step = 0;
+
+            function highlightStep() {
+                // Reset all
+                document.querySelectorAll('.node').forEach(n => {
+                    n.classList.remove('highlighted');
+                    n.style.opacity = '0.3';
+                });
+                document.querySelectorAll('.connection-path').forEach(p => p.classList.remove('active'));
+
+                // Highlight current and previous
+                for (let i = 0; i <= step; i++) {
+                    const node = document.getElementById(`node-${order[i]}`);
+                    if (node) {
+                        node.style.opacity = '1';
+                        if (i === step) node.classList.add('highlighted');
+                    }
+                }
+
+                // Highlight active connections
+                connections.forEach(conn => {
+                    const fromIdx = order.indexOf(conn.from);
+                    const toIdx = order.indexOf(conn.to);
+                    if (fromIdx >= 0 && toIdx >= 0 && fromIdx < step && toIdx <= step) {
+                        document.getElementById(`conn-${conn.from}-${conn.to}`)?.classList.add('active');
+                    }
+                });
+
+                step++;
+                if (step >= order.length) {
+                    setTimeout(() => {
+                        clearSimulation();
+                    }, 1500);
+                }
+            }
+
+            highlightStep();
+            simulationTimer = setInterval(highlightStep, 1200);
+        }
+
+        function clearSimulation() {
+            if (simulationTimer) {
+                clearInterval(simulationTimer);
+                simulationTimer = null;
+            }
+            const btn = document.getElementById('btn-simulate');
+            btn.classList.remove('active');
+            btn.innerHTML = '<span>▶️</span> Simulate Pipeline';
+            document.querySelectorAll('.node').forEach(n => {
+                n.classList.remove('highlighted');
+                n.style.opacity = '1';
+            });
+            document.querySelectorAll('.connection-path').forEach(p => p.classList.remove('active'));
+        }
+
+        function resetView() {
+            closePanel();
+            clearSimulation();
+            if (!isAnimated) toggleAnimation();
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+
+</html>
