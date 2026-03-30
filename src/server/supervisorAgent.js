@@ -25,9 +25,12 @@ import { scoringAgent } from "./scoringAgent.js";
 import { decisionSimplificationAgent } from "./decisionSimplificationAgent.js";
 import { explanationAgent } from "./explanationAgent.js";
 
-export async function runSupervisorAgent({ query, weights, userProfile }) {
+export async function runSupervisorAgent({ query, weights, userProfile, originalQuery, detectedLanguage, targetLang }) {
   console.log(`\n${"═".repeat(60)}`);
   console.log(`🎯 SUPERVISOR AGENT: Processing query "${query}"`);
+  if (originalQuery && originalQuery !== query) {
+    console.log(`🌍 Original query (${detectedLanguage?.name}): "${originalQuery}"`);
+  }
   console.log(`${"═".repeat(60)}`);
 
   // Task plan: Break query into structured subtasks

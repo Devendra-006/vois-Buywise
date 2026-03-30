@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const SERPAPI_BASE = "https://serpapi.com/search";
+const SERPAPI_BASE = "https://serpapi.com";
 const CACHE_TTL = 3600;
 
 const cache = new Map();
@@ -22,6 +22,104 @@ function setCache(key, data) {
     cache.set(key, { data, timestamp: Date.now() });
 }
 
+async function searchAmazonIndia(query, apiKey) {
+    try {
+        console.log(`🛒 Amazon India: Searching for "${query}"...`);
+        
+        const params = new URLSearchParams({
+            engine: "amazon_in",
+            query: query + " site:amazon.in",
+            api_key: apiKey,
+            num: 10
+        });
+
+        const response = await fetch(`${SERPAPI_BASE}/search?${params}`);
+        
+        if (!response.ok) {
+            console.error(`❌ Amazon API error: ${response.status}`);
+            return [];
+        }
+
+        const data = await response.json();
+        const results = data.amazon_products || data.results || [];
+
+        console.log(`✅ Amazon returned ${results.length} products`);
+
+        return results.map((item, index) => ({
+            id: `amazon_${index + 1}`,
+            platform: "Amazon",
+            title: item.title || "Unknown Product",
+            brand: item.brand || extractBrand(item.title),
+            price: parsePrice(item.price || item.main_price),
+            original_price: parsePrice(item.original_price || item.was_price) || parsePrice(item.price || item.main_price),
+            discount: item.discount_percentage ? parseInt(item.discount_percentage) : 0,
+            rating: item.rating || null,
+            reviews_count: item.reviews || 0,
+            delivery_days: item.delivery || 3,
+            warranty: "1 year",
+            product_url: item.url || item.link || "#",
+            image_url: item.thumbnail || null,
+            seller_rating: item.rating || 4.0,
+            review_snippets: [],
+            historical_price: [parsePrice(item.original_price || item.was_price) || parsePrice(item.price), parsePrice(item.price)],
+            data_source: "amazon_in",
+            in_stock: !item.availability || item.availability.toLowerCase().includes("in stock")
+        }));
+    } catch (err) {
+        console.error("❌ Amazon search failed:", err.message);
+        return [];
+    }
+}
+
+async function searchFlipkart(query, apiKey) {
+    try {
+        console.log(`🛍️ Flipkart: Searching for "${query}"...`);
+        
+        const params = new URLSearchParams({
+            engine: "flipkart",
+            query: query,
+            api_key: apiKey,
+            num: 10
+        });
+
+        const response = await fetch(`${SERPAPI_BASE}/search?${params}`);
+        
+        if (!response.ok) {
+            console.error(`❌ Flipkart API error: ${response.status}`);
+            return [];
+        }
+
+        const data = await response.json();
+        const results = data.flipkart_products || data.results || [];
+
+        console.log(`✅ Flipkart returned ${results.length} products`);
+
+        return results.map((item, index) => ({
+            id: `flipkart_${index + 1}`,
+            platform: "Flipkart",
+            title: item.title || item.product_title || "Unknown Product",
+            brand: item.brand || extractBrand(item.title || item.product_title),
+            price: parsePrice(item.price || item.main_price),
+            original_price: parsePrice(item.original_price || item.was_price) || parsePrice(item.price || item.main_price),
+            discount: item.discount_percentage ? parseInt(item.discount_percentage) : 0,
+            rating: item.rating || null,
+            reviews_count: item.reviews || 0,
+            delivery_days: item.delivery || 4,
+            warranty: "1 year",
+            product_url: item.url || item.link || "#",
+            image_url: item.thumbnail || null,
+            seller_rating: item.rating || 4.0,
+            review_snippets: [],
+            historical_price: [parsePrice(item.original_price || item.was_price) || parsePrice(item.price), parsePrice(item.price)],
+            data_source: "flipkart",
+            in_stock: !item.availability || item.availability.toLowerCase().includes("in stock")
+        }));
+    } catch (err) {
+        console.error("❌ Flipkart search failed:", err.message);
+        return [];
+    }
+}
+
 async function searchWithSerpAPI(query) {
     const apiKey = process.env.SERPAPI_KEY;
     if (!apiKey) {
@@ -30,16 +128,19 @@ async function searchWithSerpAPI(query) {
     }
 
     try {
-        console.log(`🔍 SerpAPI: Searching for "${query}"...`);
+        console.log(`🔍 SerpAPI: Searching for "${query}" across Indian e-commerce...`);
         
+        const searchQuery = query + " buy amazon.in flipkart";
         const params = new URLSearchParams({
             engine: "google_shopping",
-            q: query,
+            q: searchQuery,
             api_key: apiKey,
-            num: 10
+            num: 15,
+            gl: "in",
+            hl: "en"
         });
 
-        const response = await fetch(`${SERPAPI_BASE}?${params}`);
+        const response = await fetch(`${SERPAPI_BASE}/search?${params}`);
         
         if (!response.ok) {
             const errText = await response.text();
@@ -51,30 +152,39 @@ async function searchWithSerpAPI(query) {
         const shoppingResults = data.shopping_results || [];
 
         if (shoppingResults.length === 0) {
-            console.log("⚠️ SerpAPI returned no results");
+            console.log("⚠️ SerpAPI returned no results, trying platform-specific APIs...");
+            const [amazonResults, flipkartResults] = await Promise.all([
+                searchAmazonIndia(query, apiKey),
+                searchFlipkart(query, apiKey)
+            ]);
+            
+            const allResults = [...amazonResults, ...flipkartResults];
+            if (allResults.length > 0) {
+                return allResults.slice(0, 10);
+            }
             return null;
         }
 
-        console.log(`✅ SerpAPI returned ${shoppingResults.length} products`);
+        console.log(`✅ SerpAPI returned ${shoppingResults.length} products with REAL prices`);
 
         return shoppingResults.map((item, index) => ({
             id: `serp_${index + 1}`,
             platform: extractPlatform(item.source),
             title: item.title || "Unknown Product",
             brand: item.brand || extractBrand(item.title),
-            price: parsePrice(item.price),
-            original_price: parsePrice(item.original_price) || parsePrice(item.price),
-            discount: item.discount ? parseInt(item.discount.replace(/[^0-9]/g, "")) : 0,
+            price: item.extracted_price || parsePrice(item.price),
+            original_price: item.extracted_old_price || parsePrice(item.extracted_old_price) || parsePrice(item.original_price) || item.extracted_price || parsePrice(item.price),
+            discount: item.discount ? parseInt(item.discount.replace(/[^0-9]/g, "")) : 
+                     (item.extracted_old_price && item.extracted_price ? Math.round((1 - item.extracted_price / item.extracted_old_price) * 100) : 0),
             rating: item.rating || null,
             reviews_count: item.reviews || 0,
             delivery_days: estimateDelivery(item.delivery),
             warranty: "1 year",
-            product_url: item.link || "#",
+            product_url: item.product_link || item.link || "#",
             image_url: item.thumbnail || null,
-            seller_rating: item.extensions?.find(e => e.includes("★")) ? 
-                parseFloat(e.match(/[\d.]+/)?.[0] || 4.0) : 4.0,
+            seller_rating: item.rating || 4.0,
             review_snippets: [],
-            historical_price: [parsePrice(item.original_price) || parsePrice(item.price), parsePrice(item.price)],
+            historical_price: [item.extracted_old_price || item.extracted_price, item.extracted_price],
             data_source: "serpapi",
             in_stock: !item.availability || item.availability.toLowerCase().includes("in stock")
         }));
