@@ -103,8 +103,6 @@ GET /api/cache/stats
 POST /api/cache/clear
 ```
 
-### PRD (Hackathon Version)
 
-The `prd/buywise-prd.json` file captures the PRD you provided in a structured format used by the agents.
 
 
