@@ -163,7 +163,7 @@
       );
     }
 
-    function ProductDetailModal({ product, onClose, onWish, onAlert }) {
+    function ProductDetailModal({ product, onClose, onWish, onAlert, showChart = false }) {
       if (!product) return null;
       const discount = product.discount || Math.round((1 - product.price / (product.original_price || product.price)) * 100);
       
@@ -212,7 +212,7 @@
                 </div>
               </div>
 
-              {product.historical_price && product.historical_price.length > 1 && (
+              {showChart && product.historical_price && product.historical_price.length > 1 && (
                 <div className="bg-slate-800/50 rounded-xl p-4">
                   <h5 className="font-semibold text-sm mb-3 flex items-center gap-2">
                     <span>📈</span> Price Trend
@@ -648,9 +648,9 @@
                       </div>
                     )}
 
-                    <TopDealsSection products={data.products} onWish={addWish} onAlert={addAlert} onSelect={p => setSelId(p.id)} />
-                    <TopRatedSection products={data.products} onWish={addWish} onAlert={addAlert} onSelect={p => setSelId(p.id)} />
-                    <MostReviewedSection products={data.products} onWish={addWish} onAlert={addAlert} onSelect={p => setSelId(p.id)} />
+                    <TopDealsSection products={data.products} onWish={addWish} onAlert={addAlert} />
+                    <TopRatedSection products={data.products} onWish={addWish} onAlert={addAlert} />
+                    <MostReviewedSection products={data.products} onWish={addWish} onAlert={addAlert} />
 
                     <div className="grid md:grid-cols-3 gap-4">
                       <TopCard emoji="🥇" title="Best Overall" item={data.topPicks?.best_overall} color="gold" onWish={addWish} onSelect={p => setSelId(p.id)} />
@@ -659,15 +659,11 @@
                     </div>
 
                     <ComparisonTable products={data.products} selId={selId} setSelId={setSelId} onSetAlert={addAlert} />
-                    
-                    <div className="bg-slate-900/70 border border-slate-700 rounded-xl p-4 text-center">
-                      <p className="text-sm text-slate-400">Click on any product row to view detailed analysis with price trends</p>
-                    </div>
                   </section>
                 )}
                 
                 {sel && (
-                  <ProductDetailModal product={sel} onClose={() => setSelId(null)} onWish={addWish} onAlert={addAlert} />
+                  <ProductDetailModal product={sel} onClose={() => setSelId(null)} onWish={addWish} onAlert={addAlert} showChart={true} />
                 )}
 
                 {!data && !loading && (
