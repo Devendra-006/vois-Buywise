@@ -23,20 +23,13 @@ An HTTP API endpoint exposes this pipeline so a frontend (React, Next.js, etc.) 
 npm install
 ```
 
-2. Set your OpenRouter API key in `.env`:
-
-```bash
-OPENROUTER_API_KEY=your-openrouter-key-here
-PORT=4000
-```
-
-3. Run the app (backend + static frontend):
+2. Run the app (backend + static frontend):
 
 ```bash
 npm run dev
 ```
 
-4. Open the UI:
+3. Open the UI:
 
 - Visit `http://localhost:4000` in your browser.
 - Use the search bar and sliders to run the full multi‑agent pipeline and see:
@@ -45,7 +38,7 @@ npm run dev
   - Top‑3 simplified picks
   - Price trend chart for the selected product
 
-5. Call the recommendation endpoint directly (optional, for testing/integration):
+4. Call the recommendation endpoint directly (optional, for testing/integration):
 
 - `POST /api/recommendations`
 - Body:
