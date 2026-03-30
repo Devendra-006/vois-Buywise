@@ -5,6 +5,16 @@ node_modules/
 dist/
 build/
 
+# API Keys and secrets
+.env.local
+.env.production
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+
 
 
 

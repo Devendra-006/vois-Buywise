@@ -1,32 +1,39 @@
 // Product Retrieval Agent
-// 🎯 Role: Fetch structured product data from multiple websites via AI search.
+// 🎯 Role: Fetch structured product data from multiple websites via real APIs.
+//
+// IMPROVEMENT 1: Real Product Data Integration
+// - SerpAPI for real Google Shopping results
+// - LLM fallback for generated data
+// - In-memory caching (1 hour TTL)
+// - Comprehensive fallback chain
 //
 // System Instruction:
 // You are the Product Retrieval Agent.
 // Your job is to retrieve factual product information from multiple e-commerce 
-// platforms by calling the Web Search Agent.
+// platforms using real data sources.
 //
 // Retrieve the following:
 // - Platform name
 // - Product title
-// - Price
+// - Price (real current price)
 // - Original price (MRP)
 // - Seller rating
 // - Delivery time (days)
 // - Warranty
 // - Historical price (if available)
 // - Review snippets
+// - Stock availability
+// - Product URL
 //
 // Rules:
-// - Return only structured JSON.
-// - Do NOT summarize.
-// - Do NOT rank products.
-// - Do NOT make recommendations.
-// - If real search fails, fall back to mock data.
+// - Prefer real data over generated data
+// - Return only structured JSON
+// - Do NOT summarize or rank products
+// - Fallback chain: SerpAPI → LLM → Mock data
 
-import { webSearchAgent } from "./webSearchAgent.js";
+import { fetchRealProducts } from "./productDataService.js";
 
-// ── Fallback mock data (used when LLM search fails) ──────────────────────
+// ── Fallback mock data (used when all sources fail) ──────────────────────
 
 const fallbackProducts = {
   phone: [
@@ -212,36 +219,42 @@ function getFallbackProducts(query) {
 
 // ── Main Agent Function ──────────────────────────────────────────────────
 
-export async function productRetrievalAgent({ query }) {
+export async function productRetrievalAgent({ query, forceRefresh = false }) {
   console.log(`🔍 Product Retrieval Agent: Searching for "${query}" across multiple websites...`);
 
-  // Attempt real LLM-powered multi-website search
+  // Attempt real product data (SerpAPI → LLM → Mock)
   try {
-    const searchResults = await webSearchAgent({ query });
+    const searchResults = await fetchRealProducts(query, { forceRefresh });
 
     if (searchResults && searchResults.length > 0) {
-      console.log(`✅ Web Search Agent returned ${searchResults.length} products from multiple platforms.`);
+      console.log(`✅ Product Retrieval Agent returned ${searchResults.length} real products.`);
 
-      // Normalize to the expected output format
       return searchResults.map((p) => ({
         id: p.id,
         platform: p.platform,
         title: p.title,
+        brand: p.brand,
         price: p.price,
         original_price: p.original_price,
+        discount: p.discount,
         seller_rating: p.seller_rating,
+        rating: p.rating,
+        reviews_count: p.reviews_count,
         delivery_days: p.delivery_days,
         warranty: p.warranty,
         historical_price: p.historical_price,
         review_snippets: p.review_snippets,
-        product_url: p.product_url || "#"
+        product_url: p.product_url || "#",
+        image_url: p.image_url,
+        data_source: p.data_source,
+        in_stock: p.in_stock
       }));
     }
   } catch (err) {
-    console.warn("⚠️  Web Search Agent failed, falling back to mock data:", err.message);
+    console.warn("⚠️  Real product search failed, falling back to mock data:", err.message);
   }
 
-  // Fallback: use mock data
+  // Final fallback: use mock data
   console.log("📦 Using fallback mock data.");
   const mockProducts = getFallbackProducts(query);
 
@@ -249,6 +262,7 @@ export async function productRetrievalAgent({ query }) {
     id: p.id,
     platform: p.platform,
     title: p.title,
+    brand: p.brand || "",
     price: p.price,
     original_price: p.original_price,
     seller_rating: p.seller_rating,
@@ -256,6 +270,7 @@ export async function productRetrievalAgent({ query }) {
     warranty: p.warranty,
     historical_price: p.historical_price,
     review_snippets: p.review_snippets,
-    product_url: "#"
+    product_url: "#",
+    data_source: "mock"
   }));
 }
