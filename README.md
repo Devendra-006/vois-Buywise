@@ -15,6 +15,17 @@ This implementation follows a **Ralph-style model** inspired by the Ralph autono
 
 An HTTP API endpoint exposes this pipeline so a frontend (React, Next.js, etc.) can call it.
 
+### Features
+
+- Multi-language support (Hindi, Tamil, Telugu, and 9 more Indian languages)
+- User authentication (JWT-based)
+- Search history tracking
+- Recently viewed products
+- Wishlist management
+- Price alerts
+- PostgreSQL database for persistence
+- Redis caching (optional)
+
 ### Quick Start
 
 1. Install dependencies:
@@ -23,13 +34,28 @@ An HTTP API endpoint exposes this pipeline so a frontend (React, Next.js, etc.) 
 npm install
 ```
 
-2. Run the app (backend + static frontend):
+2. Configure environment (edit `.env`):
+
+```bash
+# Required
+OPENROUTER_API_KEY=your-key
+SERPAPI_KEY=your-key
+
+# Database (optional - uses in-memory if not set)
+PG_HOST=your-host
+PG_PORT=5432
+PG_DATABASE=buywise
+PG_USER=postgres
+PG_PASSWORD=your-password
+```
+
+3. Run the app (backend + static frontend):
 
 ```bash
 npm run dev
 ```
 
-3. Open the UI:
+4. Open the UI:
 
 - Visit `http://localhost:4000` in your browser.
 - Use the search bar and sliders to run the full multi‑agent pipeline and see:
@@ -38,30 +64,44 @@ npm run dev
   - Top‑3 simplified picks
   - Price trend chart for the selected product
 
-4. Call the recommendation endpoint directly (optional, for testing/integration):
+### API Endpoints
 
-- `POST /api/recommendations`
-- Body:
-
-```json
+#### Recommendations
+```bash
+POST /api/recommendations
 {
-  "query": "best 55 inch 4k tv",
-  "weights": {
-    "price": 0.3,
-    "reviews": 0.3,
-    "rating": 0.2,
-    "delivery": 0.2
-  }
+  "query": "best wireless earbuds under 3000",
+  "weights": { "price": 0.3, "reviews": 0.3, "rating": 0.2, "delivery": 0.2 }
 }
 ```
 
-You’ll receive:
+#### Authentication
+```bash
+POST /api/auth/register   # { email, password, name }
+POST /api/auth/login     # { email, password }
+```
 
-- Raw product list with scores
-- Top‑3 simplified choices:
-  - 🥇 Best Overall
-  - 💰 Best Budget
-  - ⭐ Premium Choice
+#### User Data (requires Bearer token)
+```bash
+GET /api/user/profile
+PUT /api/user/preferences
+GET /api/user/history
+GET /api/user/recently-viewed
+GET /api/user/wishlist
+POST /api/user/wishlist       # { product }
+DELETE /api/user/wishlist/:productId
+POST /api/user/price-alerts   # { product, targetPrice }
+GET /api/user/price-alerts
+DELETE /api/user/price-alerts/:alertId
+```
+
+#### Utilities
+```bash
+GET /api/detect-language?text=सस्ता+फोन
+POST /api/translate           # { text, targetLang }
+GET /api/cache/stats
+POST /api/cache/clear
+```
 
 ### PRD (Hackathon Version)
 

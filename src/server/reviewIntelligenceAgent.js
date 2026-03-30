@@ -75,7 +75,7 @@ Return ONLY JSON in the following format:
   const userPrompt = `Products:\n${JSON.stringify(productsPayload, null, 2)}`;
 
   const body = {
-    model: "openrouter/pony-alpha",
+    model: "stepfun/step-3.5-flash:free",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt }

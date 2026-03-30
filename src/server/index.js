@@ -16,8 +16,13 @@ import {
   updatePreferences,
   getSearchHistory,
   getRecentlyViewed,
-  getWishlist
+  getWishlist,
+  addPriceAlert,
+  getPriceAlerts,
+  deletePriceAlert
 } from "./authService.js";
+import { initDatabase, redis } from "./db.js";
+import { startPriceAlertScheduler } from "./priceAlertService.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -280,12 +285,52 @@ app.delete("/api/user/wishlist/:productId", authenticate, async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`BuyWise backend listening on http://localhost:${PORT}`);
-  console.log(`Open http://localhost:${PORT} in your browser to use BuyWise.`);
-  console.log(`\n📡 Data Sources:`);
-  console.log(`   SerpAPI: ${process.env.SERPAPI_KEY ? '✅ Configured' : '❌ Not configured'}`);
-  console.log(`   OpenRouter: ${process.env.OPENROUTER_API_KEY ? '✅ Configured' : '❌ Not configured'}`);
+app.post("/api/user/price-alerts", authenticate, async (req, res) => {
+  try {
+    const { product, targetPrice } = req.body || {};
+    if (!product || !targetPrice) {
+      return res.status(400).json({ error: "Product and targetPrice required" });
+    }
+    const alert = await addPriceAlert(req.user.id, product, targetPrice);
+    res.json({ alert });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
+app.get("/api/user/price-alerts", authenticate, async (req, res) => {
+  try {
+    const alerts = await getPriceAlerts(req.user.id);
+    res.json({ alerts });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/user/price-alerts/:alertId", authenticate, async (req, res) => {
+  try {
+    await deletePriceAlert(req.params.alertId, req.user.id);
+    res.json({ message: "Alert deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+async function startServer() {
+  await initDatabase();
+  startPriceAlertScheduler();
+  
+  app.listen(PORT, () => {
+    console.log(`BuyWise backend listening on http://localhost:${PORT}`);
+    console.log(`Open http://localhost:${PORT} in your browser to use BuyWise.`);
+    console.log(`\n📡 Data Sources:`);
+    console.log(`   SerpAPI: ${process.env.SERPAPI_KEY ? '✅ Configured' : '❌ Not configured'}`);
+    console.log(`   OpenRouter: ${process.env.OPENROUTER_API_KEY ? '✅ Configured' : '❌ Not configured'}`);
+    console.log(`\n🗄️  Database:`);
+    console.log(`   PostgreSQL: ${process.env.PG_HOST ? '✅ Connected' : '⚠️ Using defaults'}`);
+    console.log(`   Redis: ${redis && redis.status === 'ready' ? '✅ Connected' : '⚠️ Not configured'}`);
+  });
+}
+
+startServer();
 

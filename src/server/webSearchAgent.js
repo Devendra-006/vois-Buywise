@@ -86,7 +86,7 @@ IMPORTANT: Return ONLY the JSON array. No other text.`;
 Return 6 realistic product listings from different platforms, with varied pricing (budget to premium). All prices in INR.`;
 
     const body = {
-        model: "google/gemini-2.0-flash-001",
+        model: "stepfun/step-3.5-flash:free",
         messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt }

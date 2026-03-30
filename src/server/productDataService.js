@@ -284,7 +284,7 @@ Return ONLY JSON. No markdown.`;
                 "X-Title": "BuyWise Agentic Assistant"
             },
             body: JSON.stringify({
-                model: "google/gemini-2.0-flash-001",
+                model: "stepfun/step-3.5-flash:free",
                 messages: [
                     { role: "system", content: systemPrompt },
                     { role: "user", content: `Find products for: "${query}"` }
