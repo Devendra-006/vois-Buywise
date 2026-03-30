@@ -84,6 +84,16 @@
         to { transform: translateX(0); opacity: 1; }
       }
       .toast-slide { animation: toastSlide 0.3s ease-out forwards; }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .spin { animation: spin 1s linear infinite; }
+      @keyframes skeleton-pulse {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.8; }
+      }
+      .skeleton { animation: skeleton-pulse 1.5s ease-in-out infinite; }
       .platform-badge {
         display: inline-flex; align-items: center; padding: 2px 8px;
         border-radius: 9999px; font-size: 10px; font-weight: 600;
@@ -102,13 +112,16 @@
       .nav-item.active { background: rgba(56, 189, 248, 0.1); border-left: 2px solid var(--accent-sky); }
       input[type="range"] { -webkit-appearance: none; height: 4px; border-radius: 2px; background: var(--bg-tertiary); }
       input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent-sky); cursor: pointer; }
+      .circular-progress { transform: rotate(-90deg); }
+      .sort-icon { transition: transform 0.2s; }
+      .sort-asc .sort-icon { transform: rotate(180deg); }
     </style>
   </head>
   <body>
     <div id="root"></div>
 
     <script type="text/babel">
-      const { useState, useEffect, useRef, useCallback } = React;
+      const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
       const CATEGORIES = [
         { id: "all", name: "All Categories", icon: "🏷️" },
@@ -127,6 +140,39 @@
         "smartphone 5G", "winter jackets", "pressure cooker"
       ];
 
+      const AUTOCOMPLETE_SUGGESTIONS = [
+        "best laptop under 50000", "wireless earbuds under 2000", "smartphone 5g under 30000",
+        "4k tv under 50000", "running shoes for men", "winter jacket women",
+        "laptop for students", "headphones noise cancellation", "smartwatch under 5000",
+        "earbuds with bass", "gaming laptop under 80000", "camera for beginners"
+      ];
+
+      const BRANDS = ["Samsung", "Apple", "OnePlus", "Xiaomi", "Realme", "Vivo", "Oppo", "Sony", "LG", "TCL", "Mi", "Motorola", "Nokia", "BoAt", "JBL", "Noise", "Fire-Boltt", "Titan"];
+
+      const useLocalStorage = (key, initialValue) => {
+        const [storedValue, setStoredValue] = useState(() => {
+          try {
+            const item = window.localStorage.getItem(key);
+            return item ? JSON.parse(item) : initialValue;
+          } catch (error) {
+            console.error("Error reading localStorage:", error);
+            return initialValue;
+          }
+        });
+
+        const setValue = (value) => {
+          try {
+            const valueToStore = value instanceof Function ? value(storedValue) : value;
+            setStoredValue(valueToStore);
+            window.localStorage.setItem(key, JSON.stringify(valueToStore));
+          } catch (error) {
+            console.error("Error writing to localStorage:", error);
+          }
+        };
+
+        return [storedValue, setValue];
+      };
+
       const getPlatformClass = (platform) => {
         const p = (platform || "").toLowerCase();
         if (p.includes("amazon")) return "platform-amazon";
@@ -136,6 +182,54 @@
         if (p.includes("myntra") || p.includes("ajio") || p.includes("nykaa")) return "platform-myntra";
         return "platform-default";
       };
+
+      function CircularScore({ score, size = 80, strokeWidth = 6 }) {
+        const radius = (size - strokeWidth) / 2;
+        const circumference = radius * 2 * Math.PI;
+        const offset = circumference - (score / 100) * circumference;
+        const color = score >= 80 ? "#34d399" : score >= 60 ? "#fbbf24" : "#fb7185";
+
+        return (
+          <svg width={size} height={size} className="circular-progress">
+            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="rgba(148,163,184,0.2)" strokeWidth={strokeWidth} />
+            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
+              strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
+            <text x="50%" y="50%" textAnchor="middle" dy="0.3em" fill={color} fontSize="20" fontWeight="bold" style={{ transform: "rotate(90deg)", transformOrigin: "center" }}>
+              {Math.round(score)}
+            </text>
+          </svg>
+        );
+      }
+
+      function ScoreBreakdown({ product }) {
+        if (!product?.score_breakdown) return null;
+        const { price_score, reviews_score, rating_score, delivery_score } = product.score_breakdown;
+        
+        return (
+          <div className="grid grid-cols-2 gap-3 mt-3">
+            <div className="flex items-center gap-2 bg-tertiary/50 rounded-lg p-2">
+              <span className="text-xs text-muted">💰</span>
+              <span className="text-xs text-secondary">Price</span>
+              <span className="ml-auto text-xs font-semibold accent-emerald">{price_score.toFixed(1)}</span>
+            </div>
+            <div className="flex items-center gap-2 bg-tertiary/50 rounded-lg p-2">
+              <span className="text-xs text-muted">💬</span>
+              <span className="text-xs text-secondary">Reviews</span>
+              <span className="ml-auto text-xs font-semibold accent-sky">{reviews_score.toFixed(1)}</span>
+            </div>
+            <div className="flex items-center gap-2 bg-tertiary/50 rounded-lg p-2">
+              <span className="text-xs text-muted">⭐</span>
+              <span className="text-xs text-secondary">Rating</span>
+              <span className="ml-auto text-xs font-semibold accent-violet">{rating_score.toFixed(1)}</span>
+            </div>
+            <div className="flex items-center gap-2 bg-tertiary/50 rounded-lg p-2">
+              <span className="text-xs text-muted">🚚</span>
+              <span className="text-xs text-secondary">Delivery</span>
+              <span className="ml-auto text-xs font-semibold accent-amber">{delivery_score.toFixed(1)}</span>
+            </div>
+          </div>
+        );
+      }
 
       function Toast({ message, type, onClose }) {
         useEffect(() => {
@@ -151,7 +245,7 @@
         };
 
         return (
-          <div className={`toast-slide fixed bottom-4 right-4 ${colors[type]} border rounded-xl px-4 py-3 flex items-center gap-3 shadow-lg z-50`}>
+          <div className={`toast-slide fixed bottom-20 md:bottom-4 right-4 ${colors[type]} border rounded-xl px-4 py-3 flex items-center gap-3 shadow-lg z-50`}>
             <span className="text-white text-sm">{message}</span>
             <button onClick={onClose} className="text-white/70 hover:text-white">✕</button>
           </div>
@@ -215,6 +309,41 @@
         );
       }
 
+      function SkeletonCard() {
+        return (
+          <div className="bg-secondary border border-custom rounded-2xl p-4 animate-pulse">
+            <div className="h-4 bg-tertiary rounded w-3/4 mb-3"></div>
+            <div className="h-3 bg-tertiary rounded w-1/2 mb-4"></div>
+            <div className="flex justify-between">
+              <div className="h-6 bg-tertiary rounded w-20"></div>
+              <div className="h-6 bg-tertiary rounded w-12"></div>
+            </div>
+          </div>
+        );
+      }
+
+      function SkeletonTable() {
+        return (
+          <div className="bg-secondary border border-custom rounded-2xl overflow-hidden">
+            <div className="p-4 border-b border-custom">
+              <div className="h-4 bg-tertiary rounded w-32 skeleton"></div>
+            </div>
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="flex items-center gap-4 p-4 border-b border-custom/50 last:border-0">
+                <div className="h-4 bg-tertiary rounded w-8 skeleton"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-tertiary rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-tertiary rounded w-1/2"></div>
+                </div>
+                <div className="h-4 bg-tertiary rounded w-16"></div>
+                <div className="h-4 bg-tertiary rounded w-20"></div>
+                <div className="h-4 bg-tertiary rounded w-12"></div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
       function PriceChart({ product }) {
         const canvasRef = useRef(null);
         const chartRef = useRef(null);
@@ -244,54 +373,73 @@
               <span className="text-sm">📈</span>
               <h3 className="text-sm font-semibold accent-sky">Price Trend</h3>
             </div>
-            <p className="text-xs text-muted mb-2">{product.title}</p>
+            <p className="text-xs text-muted mb-2 line-clamp-1">{product.title}</p>
             <canvas ref={canvasRef} height="180"></canvas>
           </div>
         );
       }
 
-      function TopPickCard({ emoji, title, item, accentColor, onAddToWishlist }) {
+      function ProductImage({ src, title, className }) {
+        const [error, setError] = useState(false);
+        
+        if (error || !src || src === "#") {
+          return (
+            <div className={`bg-tertiary rounded-lg flex items-center justify-center ${className}`}>
+              <span className="text-3xl">📦</span>
+            </div>
+          );
+        }
+        
+        return (
+          <img 
+            src={src} 
+            alt={title}
+            className={`object-cover rounded-lg ${className}`}
+            onError={() => setError(true)}
+          />
+        );
+      }
+
+      function TopPickCard({ emoji, title, item, accentColor, onAddToWishlist, onSetAlert }) {
         if (!item) return null;
         const borders = { gold: "border-amber-500/40 hover:border-amber-500/60", green: "border-emerald-500/40 hover:border-emerald-500/60", purple: "border-violet-500/40 hover:border-violet-500/60" };
         const gradients = { gold: "from-amber-500/10", green: "from-emerald-500/10", purple: "from-violet-500/10" };
 
         return (
           <div className={`bg-gradient-to-b ${gradients[accentColor]} bg-secondary border ${borders[accentColor]} rounded-2xl p-4 flex flex-col space-y-3 transition-all duration-300 fade-in hover:scale-[1.02]`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-2xl">{emoji}</span>
-                <div>
-                  <div className="text-[10px] uppercase tracking-widest text-muted font-semibold">{title}</div>
-                  <div className="font-semibold text-sm mt-0.5 line-clamp-1">{item.title}</div>
+            <div className="flex gap-3">
+              <ProductImage src={item.image_url} title={item.title} className="w-20 h-20 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-muted font-semibold">{title}</div>
+                    <div className="font-semibold text-sm mt-0.5 line-clamp-2">{item.title}</div>
+                  </div>
+                  <CircularScore score={item.smart_score} size={48} strokeWidth={4} />
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="text-[10px] uppercase tracking-wider text-muted">Smart Score</div>
-                <div className="text-xl font-bold accent-sky">{item.smart_score}</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span className={`platform-badge ${getPlatformClass(item.platform)}`}>{item.platform}</span>
-              <button onClick={() => onAddToWishlist(item)} className="text-rose-400 hover:text-rose-300 text-sm">♡</button>
+              <button onClick={() => onAddToWishlist(item)} className="text-rose-400 hover:text-rose-300 text-sm transition">♡</button>
+              <button onClick={() => onSetAlert(item)} className="text-amber-400 hover:text-amber-300 text-sm transition">🔔</button>
               {item.product_url && item.product_url !== "#" && (
-                <a href={item.product_url} target="_blank" rel="noopener noreferrer" className="text-[10px] accent-sky hover:text-sky-300 underline underline-offset-2">View →</a>
+                <a href={item.product_url} target="_blank" rel="noopener noreferrer" className="ml-auto text-[10px] accent-sky hover:text-sky-300 underline underline-offset-2">View →</a>
               )}
             </div>
             {item.why_selected && (
               <div className="space-y-1.5">
-                {item.why_selected.map((reason, idx) => (
+                {item.why_selected.slice(0, 2).map((reason, idx) => (
                   <div key={idx} className="text-xs text-secondary flex items-start">
                     <span className="mr-1.5 accent-sky">✓</span>
-                    <span>{reason}</span>
+                    <span className="line-clamp-1">{reason}</span>
                   </div>
                 ))}
               </div>
             )}
-            {item.trade_off && (
-              <div className="text-[11px] text-muted italic border-t border-custom pt-2">⚖️ {item.trade_off}</div>
-            )}
             <div className="flex justify-between text-xs text-muted pt-1 border-t border-custom/50">
               <span className="font-semibold text-primary">₹{item.price.toLocaleString()}</span>
+              <span className="text-muted line-through">₹{item.original_price?.toLocaleString()}</span>
               <span>⭐ {item.seller_rating}</span>
               <span>🚚 {item.delivery_days}d</span>
             </div>
@@ -313,7 +461,195 @@
         );
       }
 
-      function Sidebar({ activeView, setActiveView, searchHistory, onSearchHistory, onThemeToggle, darkMode }) {
+      function AutocompleteDropdown({ query, onSelect }) {
+        const suggestions = useMemo(() => {
+          if (!query || query.length < 2) return [];
+          const q = query.toLowerCase();
+          return AUTOCOMPLETE_SUGGESTIONS.filter(s => s.toLowerCase().includes(q)).slice(0, 5);
+        }, [query]);
+
+        if (suggestions.length === 0) return null;
+
+        return (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-secondary border border-custom rounded-xl shadow-xl z-40 overflow-hidden fade-in">
+            {suggestions.map((suggestion, i) => (
+              <button key={i} onClick={() => onSelect(suggestion)}
+                className="w-full text-left px-4 py-2.5 text-sm hover:bg-tertiary transition flex items-center gap-2">
+                <span className="text-muted">🔍</span>
+                <span>{suggestion}</span>
+              </button>
+            ))}
+          </div>
+        );
+      }
+
+      function SortableHeader({ label, field, sortField, sortDirection, onSort }) {
+        const isActive = sortField === field;
+        return (
+          <th className="px-3 py-2.5 text-right cursor-pointer hover:bg-tertiary/50 transition select-none"
+            onClick={() => onSort(field)}>
+            <span className="flex items-center justify-end gap-1">
+              <span>{label}</span>
+              <span className={`sort-icon ${isActive && sortDirection === 'asc' ? 'text-accent-sky' : ''}`}>
+                {isActive ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+              </span>
+            </span>
+          </th>
+        );
+      }
+
+      function ComparisonTable({ products, selectedId, onSelect, onSetAlert, sortField, onSort }) {
+        const sortDirection = sortField.startsWith('-') ? 'desc' : 'asc';
+        const actualField = sortField.replace('-', '');
+        
+        const sortedProducts = useMemo(() => {
+          if (!products) return [];
+          const sorted = [...products].sort((a, b) => {
+            let aVal, bVal;
+            switch (actualField) {
+              case 'price': aVal = a.price; bVal = b.price; break;
+              case 'rating': aVal = a.seller_rating; bVal = b.seller_rating; break;
+              case 'score': aVal = a.smart_score; bVal = b.smart_score; break;
+              case 'delivery': aVal = a.delivery_days; bVal = b.delivery_days; break;
+              default: return 0;
+            }
+            return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+          });
+          return sorted;
+        }, [products, actualField, sortDirection]);
+
+        return (
+          <div className="bg-secondary border border-custom rounded-2xl overflow-hidden">
+            <div className="px-4 py-3 flex items-center justify-between border-b border-custom">
+              <div className="text-xs uppercase tracking-widest text-secondary font-semibold">📊 Comparison</div>
+              <span className="text-[11px] text-muted">{sortedProducts.length} products</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-xs">
+                <thead className="bg-tertiary border-b border-custom">
+                  <tr className="text-muted text-[10px] uppercase tracking-widest">
+                    <th className="px-3 py-2.5 text-left">#</th>
+                    <th className="px-3 py-2.5 text-left">Product</th>
+                    <th className="px-3 py-2.5 text-left">Platform</th>
+                    <SortableHeader label="Price" field="price" sortField={sortField} sortDirection={sortDirection} onSort={onSort} />
+                    <SortableHeader label="Rating" field="rating" sortField={sortField} sortDirection={sortDirection} onSort={onSort} />
+                    <SortableHeader label="Score" field="score" sortField={sortField} sortDirection={sortDirection} onSort={onSort} />
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedProducts.map((p, idx) => (
+                    <tr key={p.id} onClick={() => onSelect(p.id)}
+                      className={`border-b border-custom/50 cursor-pointer hover:bg-sky-500/5 transition ${p.id === selectedId ? "bg-sky-500/10 border-l-2 border-l-sky-400" : ""}`}>
+                      <td className="px-3 py-2.5 text-muted font-mono">{idx + 1}</td>
+                      <td className="px-3 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <ProductImage src={p.image_url} title={p.title} className="w-8 h-8" />
+                          <div>
+                            <div className="font-medium text-sm line-clamp-1">{p.title}</div>
+                            <div className="text-[10px] text-muted mt-0.5">
+                              {p.warranty}
+                              {p.price_intel?.buy_recommendation && (
+                                <span className={`ml-2 font-semibold ${p.price_intel.buy_recommendation === "Buy" ? "accent-emerald" : p.price_intel.buy_recommendation === "Wait" ? "accent-amber" : "text-muted"}`}>
+                                  {p.price_intel.buy_recommendation === "Buy" ? "🟢 Buy" : p.price_intel.buy_recommendation === "Wait" ? "🟡 Wait" : ""}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2.5"><PlatformBadge platform={p.platform} /></td>
+                      <td className="px-3 py-2.5 text-right">
+                        <span className="font-semibold">₹{p.price.toLocaleString()}</span>
+                        {p.original_price > p.price && <span className="text-[10px] text-muted line-through ml-1">₹{p.original_price.toLocaleString()}</span>}
+                      </td>
+                      <td className="px-3 py-2.5 text-right">⭐ {p.seller_rating}</td>
+                      <td className="px-3 py-2.5 text-right">
+                        <span className="font-bold accent-sky">{p.smart_score}</span>
+                        <button onClick={(e) => { e.stopPropagation(); onSetAlert(p); }} className="ml-2 text-amber-400 hover:text-amber-300">🔔</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      }
+
+      function ProductDetailPanel({ product, onClose, onAddToWishlist, onSetAlert }) {
+        if (!product) return null;
+
+        return (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 fade-in" onClick={onClose}>
+            <div className="bg-secondary border border-custom rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="p-4 border-b border-custom flex items-center justify-between">
+                <h3 className="font-semibold">Product Details</h3>
+                <button onClick={onClose} className="text-muted hover:text-primary">✕</button>
+              </div>
+              <div className="p-4 space-y-4">
+                <div className="flex gap-4">
+                  <ProductImage src={product.image_url} title={product.title} className="w-32 h-32" />
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-lg">{product.title}</h4>
+                    <div className="flex items-center gap-2 mt-2">
+                      <PlatformBadge platform={product.platform} />
+                      <span className="text-sm text-muted">{product.brand}</span>
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-2xl font-bold accent-emerald">₹{product.price?.toLocaleString()}</span>
+                      <span className="text-muted line-through">₹{product.original_price?.toLocaleString()}</span>
+                      {product.discount && <span className="text-sm text-emerald-400">-{product.discount}%</span>}
+                    </div>
+                    <div className="flex items-center gap-3 mt-2 text-sm text-muted">
+                      <span>⭐ {product.seller_rating} rating</span>
+                      <span>🚚 {product.delivery_days} days</span>
+                      <span>🛡️ {product.warranty}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <CircularScore score={product.smart_score} />
+                  <div>
+                    <div className="text-sm font-semibold">Smart Score</div>
+                    <div className="text-xs text-muted">Based on your preferences</div>
+                  </div>
+                </div>
+
+                <ScoreBreakdown product={product} />
+
+                {product.review_snippets?.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-2">Customer Reviews</h4>
+                    <div className="space-y-2">
+                      {product.review_snippets.slice(0, 3).map((review, i) => (
+                        <div key={i} className="text-xs text-secondary bg-tertiary/50 rounded-lg p-2">"{review}"</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-2 pt-2">
+                  <a href={product.product_url} target="_blank" rel="noopener noreferrer"
+                    className="flex-1 text-center py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 rounded-xl text-sm font-semibold transition">
+                    View on {product.platform}
+                  </a>
+                  <button onClick={() => { onAddToWishlist(product); onClose(); }}
+                    className="px-4 py-2.5 bg-tertiary rounded-xl text-sm hover:bg-slate-700 transition">
+                    ❤️
+                  </button>
+                  <button onClick={() => { onSetAlert(product); onClose(); }}
+                    className="px-4 py-2.5 bg-tertiary rounded-xl text-sm hover:bg-slate-700 transition">
+                    🔔
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function Sidebar({ activeView, setActiveView, wishlistCount, onThemeToggle, darkMode }) {
         return (
           <aside className="w-64 bg-secondary border-r border-custom h-screen sticky top-0 flex flex-col overflow-y-auto scrollbar-hide">
             <div className="p-4 border-b border-custom">
@@ -321,6 +657,7 @@
                 <span className="text-2xl">🛒</span>
                 <span className="font-bold text-lg">BuyWise</span>
               </div>
+              <p className="text-[10px] text-muted mt-1">Agentic AI Buying Assistant</p>
             </div>
 
             <nav className="flex-1 p-3">
@@ -336,7 +673,9 @@
                     className={`nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm ${activeView === item.id ? "active bg-sky-500/10" : "text-secondary hover:bg-tertiary"}`}>
                     <span>{item.icon}</span>
                     <span>{item.label}</span>
-                    {item.id === "wishlist" && <span className="ml-auto text-xs bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded-full">0</span>}
+                    {item.id === "wishlist" && wishlistCount > 0 && (
+                      <span className="ml-auto text-xs bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded-full">{wishlistCount}</span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -356,8 +695,8 @@
               <div className="mt-6">
                 <h4 className="text-[10px] uppercase tracking-widest text-muted font-semibold px-3 mb-2">Trending</h4>
                 <div className="space-y-1">
-                  {TRENDING_SEARCHES.map((term, i) => (
-                    <button key={i} onClick={() => { setActiveView("home"); onSearchHistory(term); }}
+                  {TRENDING_SEARCHES.slice(0, 4).map((term, i) => (
+                    <button key={i} onClick={() => setActiveView("home")}
                       className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-secondary hover:bg-tertiary transition text-left">
                       <span className="text-muted">🔥</span>
                       <span className="truncate">{term}</span>
@@ -385,21 +724,25 @@
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {wishlist.map((item, i) => (
               <div key={i} className="bg-secondary border border-custom rounded-2xl p-4 fade-in">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
+                <div className="flex gap-3 mb-3">
+                  <ProductImage src={item.image_url} title={item.title} className="w-16 h-16 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm line-clamp-2">{item.title}</h3>
-                    <span className={`platform-badge ${getPlatformClass(item.platform)} mt-2`}>{item.platform}</span>
+                    <span className={`platform-badge ${getPlatformClass(item.platform)} mt-1`}>{item.platform}</span>
                   </div>
-                  <button onClick={() => onRemove(i)} className="text-rose-400 hover:text-rose-300 ml-2">✕</button>
+                  <button onClick={() => onRemove(i)} className="text-rose-400 hover:text-rose-300">✕</button>
                 </div>
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="text-lg font-bold accent-emerald">₹{item.price.toLocaleString()}</span>
-                    <span className="text-xs text-muted line-through ml-2">₹{item.original_price?.toLocaleString()}</span>
+                    <span className="text-lg font-bold accent-emerald">₹{item.price?.toLocaleString()}</span>
+                    {item.original_price > item.price && (
+                      <span className="text-xs text-muted line-through ml-2">₹{item.original_price?.toLocaleString()}</span>
+                    )}
                   </div>
                   <span className="text-sm">⭐ {item.seller_rating}</span>
                 </div>
-                <a href={item.product_url || "#"} target="_blank" rel="noopener noreferrer" className="mt-3 block w-full text-center py-2 bg-sky-500 hover:bg-sky-600 rounded-xl text-sm font-semibold transition">
+                <a href={item.product_url || "#"} target="_blank" rel="noopener noreferrer"
+                  className="mt-3 block w-full text-center py-2 bg-sky-500 hover:bg-sky-600 rounded-xl text-sm font-semibold transition">
                   View Product
                 </a>
               </div>
@@ -416,9 +759,14 @@
           <div className="space-y-3">
             {alerts.map((alert, i) => (
               <div key={i} className="bg-secondary border border-custom rounded-2xl p-4 fade-in flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-sm">{alert.title}</h3>
-                  <p className="text-xs text-muted mt-1">Target: ₹{alert.targetPrice?.toLocaleString()} | Current: ₹{alert.currentPrice?.toLocaleString()}</p>
+                <div className="flex items-center gap-3">
+                  <ProductImage src={alert.image_url} title={alert.title} className="w-12 h-12" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm line-clamp-1">{alert.title}</h3>
+                    <p className="text-xs text-muted mt-1">
+                      Target: ₹{alert.targetPrice?.toLocaleString()} | Current: ₹{alert.currentPrice?.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${alert.status === "Active" ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"}`}>{alert.status}</span>
@@ -453,23 +801,35 @@
         );
       }
 
-      function SettingsView() {
+      function SettingsView({ weights, setWeights, onPreset }) {
+        const presets = [
+          { name: "Budget Buyer", desc: "Price-focused", weights: { price: 0.5, reviews: 0.2, rating: 0.15, delivery: 0.15 } },
+          { name: "Balanced", desc: "All factors equal", weights: { price: 0.25, reviews: 0.25, rating: 0.25, delivery: 0.25 } },
+          { name: "Quality First", desc: "Reviews & rating", weights: { price: 0.15, reviews: 0.35, rating: 0.35, delivery: 0.15 } },
+        ];
+
         return (
           <div className="max-w-2xl space-y-6">
             <div className="bg-secondary border border-custom rounded-2xl p-5">
               <h3 className="font-semibold mb-4">Default Weight Presets</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {[
-                  { name: "Budget Buyer", desc: "Price-focused", color: "emerald" },
-                  { name: "Balanced", desc: "All factors equal", color: "sky" },
-                  { name: "Quality First", desc: "Reviews & rating", color: "violet" },
-                ].map((preset, i) => (
-                  <button key={i} className="p-4 bg-tertiary border border-custom rounded-xl text-left hover:border-sky-500/50 transition">
-                    <div className={`w-3 h-3 rounded-full bg-accent-${preset.color} mb-2`}></div>
+                {presets.map((preset, i) => (
+                  <button key={i} onClick={() => onPreset(preset.weights)} 
+                    className="p-4 bg-tertiary border border-custom rounded-xl text-left hover:border-sky-500/50 transition">
                     <h4 className="font-semibold text-sm">{preset.name}</h4>
-                    <p className="text-xs text-muted">{preset.desc}</p>
+                    <p className="text-xs text-muted mt-1">{preset.desc}</p>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div className="bg-secondary border border-custom rounded-2xl p-5">
+              <h3 className="font-semibold mb-4">Current Weights</h3>
+              <div className="space-y-4">
+                <WeightSlider label="Price" icon="💰" value={weights.price} onChange={(v) => setWeights(w => ({...w, price: v}))} />
+                <WeightSlider label="Reviews" icon="💬" value={weights.reviews} onChange={(v) => setWeights(w => ({...w, reviews: v}))} />
+                <WeightSlider label="Rating" icon="⭐" value={weights.rating} onChange={(v) => setWeights(w => ({...w, rating: v}))} />
+                <WeightSlider label="Delivery" icon="🚚" value={weights.delivery} onChange={(v) => setWeights(w => ({...w, delivery: v}))} />
               </div>
             </div>
 
@@ -503,23 +863,58 @@
         );
       }
 
+      function AlertModal({ product, onClose, onCreate }) {
+        const [targetPrice, setTargetPrice] = useState(product?.price || 0);
+        
+        if (!product) return null;
+        
+        return (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 fade-in" onClick={onClose}>
+            <div className="bg-secondary border border-custom rounded-2xl max-w-md w-full p-5" onClick={e => e.stopPropagation()}>
+              <h3 className="font-semibold text-lg mb-4">🔔 Set Price Alert</h3>
+              <div className="flex items-center gap-3 mb-4">
+                <ProductImage src={product.image_url} title={product.title} className="w-12 h-12" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium line-clamp-1">{product.title}</p>
+                  <p className="text-xs text-muted">Current: ₹{product.price?.toLocaleString()}</p>
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="text-xs text-muted uppercase tracking-wide mb-1 block">Target Price (₹)</label>
+                <input type="number" value={targetPrice} onChange={e => setTargetPrice(Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-tertiary border border-custom rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={onClose} className="flex-1 px-4 py-2 bg-tertiary rounded-xl text-sm hover:bg-slate-700 transition">Cancel</button>
+                <button onClick={() => onCreate(targetPrice)} className="flex-1 px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-600 rounded-xl text-sm font-semibold hover:from-sky-400 hover:to-blue-500 transition">Create Alert</button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       function App() {
-        const [darkMode, setDarkMode] = useState(true);
+        const [darkMode, setDarkMode] = useLocalStorage("buywise-dark-mode", true);
         const [activeView, setActiveView] = useState("home");
         const [query, setQuery] = useState("");
-        const [weights, setWeights] = useState({ price: 0.3, reviews: 0.3, rating: 0.2, delivery: 0.2 });
+        const [weights, setWeights] = useLocalStorage("buywise-weights", { price: 0.3, reviews: 0.3, rating: 0.2, delivery: 0.2 });
         const [loading, setLoading] = useState(false);
         const [error, setError] = useState(null);
         const [data, setData] = useState(null);
         const [selectedProductId, setSelectedProductId] = useState(null);
-        const [wishlist, setWishlist] = useState([]);
-        const [alerts, setAlerts] = useState([]);
-        const [searchHistory, setSearchHistory] = useState([]);
+        const [showDetailModal, setShowDetailModal] = useState(false);
+        const [showAlertModal, setShowAlertModal] = useState(null);
+        const [wishlist, setWishlist] = useLocalStorage("buywise-wishlist", []);
+        const [alerts, setAlerts] = useLocalStorage("buywise-alerts", []);
+        const [searchHistory, setSearchHistory] = useLocalStorage("buywise-history", []);
         const [toast, setToast] = useState(null);
         const [showFilters, setShowFilters] = useState(false);
+        const [showAutocomplete, setShowAutocomplete] = useState(false);
+        const [sortField, setSortField] = useState("-score");
         const [filters, setFilters] = useState({
-          category: "all", minPrice: "", maxPrice: "", platforms: [], inStockOnly: false
+          category: "all", minPrice: "", maxPrice: "", platforms: [], brands: [], inStockOnly: false
         });
+        const searchInputRef = useRef(null);
 
         useEffect(() => {
           document.documentElement.classList.toggle("light-mode", !darkMode);
@@ -529,16 +924,25 @@
           setToast({ message, type });
         }, []);
 
+        const handleSort = (field) => {
+          if (sortField === field) {
+            setSortField(field.startsWith('-') ? field.slice(1) : `-${field}`);
+          } else {
+            setSortField(field);
+          }
+        };
+
         const handleSearch = async (e) => {
           if (e) e.preventDefault();
           if (!query.trim()) return;
           setLoading(true);
           setError(null);
           setData(null);
+          setShowAutocomplete(false);
 
           setSearchHistory(prev => [{
             query, date: new Date().toLocaleDateString(), results: 6
-          }, ...prev.slice(0, 9)]);
+          }, ...prev.filter(h => h.query !== query).slice(0, 9)]);
 
           try {
             const res = await fetch("/api/recommendations", {
@@ -573,8 +977,15 @@
           showToast("Removed from wishlist", "info");
         };
 
-        const addAlert = (item) => {
-          setAlerts(prev => [...prev, { title: item.title, targetPrice: item.price, currentPrice: item.price, status: "Active" }]);
+        const createAlert = (product, targetPrice) => {
+          setAlerts(prev => [...prev, { 
+            ...product, 
+            targetPrice, 
+            currentPrice: product.price, 
+            status: "Active",
+            createdAt: new Date().toISOString()
+          }]);
+          setShowAlertModal(null);
           showToast("Price alert set!", "success");
         };
 
@@ -583,29 +994,40 @@
         };
 
         const clearHistory = () => setSearchHistory([]);
-
-        const rerunSearch = (q) => {
-          setQuery(q);
-          setActiveView("home");
-          setTimeout(() => handleSearch(), 100);
-        };
+        const rerunSearch = (q) => { setQuery(q); setActiveView("home"); setTimeout(() => handleSearch(), 100); };
+        const applyPreset = (presetWeights) => { setWeights(presetWeights); showToast("Preset applied!", "success"); };
 
         const selectedProduct = data?.products?.find(p => p.id === selectedProductId) || null;
         const platforms = data?.products ? [...new Set(data.products.map(p => p.platform))] : [];
+        const brands = data?.products ? [...new Set(data.products.map(p => p.brand).filter(Boolean))] : [];
 
         return (
           <div className="flex min-h-screen">
             <Sidebar 
               activeView={activeView} 
               setActiveView={setActiveView}
-              searchHistory={searchHistory}
-              onSearchHistory={(q) => { setQuery(q); setActiveView("home"); setTimeout(() => handleSearch(), 100); }}
+              wishlistCount={wishlist.length}
               onThemeToggle={() => setDarkMode(!darkMode)}
               darkMode={darkMode}
             />
 
             <main className="flex-1 p-6 overflow-y-auto">
               {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+              {showDetailModal && selectedProduct && (
+                <ProductDetailPanel 
+                  product={selectedProduct} 
+                  onClose={() => setShowDetailModal(false)}
+                  onAddToWishlist={addToWishlist}
+                  onSetAlert={(p) => { setShowDetailModal(false); setShowAlertModal(p); }}
+                />
+              )}
+              {showAlertModal && (
+                <AlertModal 
+                  product={showAlertModal} 
+                  onClose={() => setShowAlertModal(null)}
+                  onCreate={(targetPrice) => createAlert(showAlertModal, targetPrice)}
+                />
+              )}
 
               {activeView === "home" && (
                 <div className="max-w-5xl mx-auto space-y-6 fade-in">
@@ -617,24 +1039,30 @@
                   </header>
 
                   <form onSubmit={handleSearch} className="bg-secondary border border-custom rounded-2xl p-5 space-y-4">
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <div className="flex-1 relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">🔍</span>
-                        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
-                          placeholder="What are you looking for? (e.g. laptop under 50k)"
-                          className="w-full pl-11 pr-4 py-3 bg-tertiary border border-custom rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 placeholder:text-muted" />
-                        {query && (
-                          <button type="button" onClick={() => setQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-primary">✕</button>
-                        )}
+                    <div className="relative">
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="flex-1 relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">🔍</span>
+                          <input ref={searchInputRef} type="text" value={query} 
+                            onChange={(e) => { setQuery(e.target.value); setShowAutocomplete(true); }}
+                            onFocus={() => setShowAutocomplete(true)}
+                            placeholder="What are you looking for? (e.g. laptop under 50k)"
+                            className="w-full pl-11 pr-4 py-3 bg-tertiary border border-custom rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 placeholder:text-muted" />
+                          {query && (
+                            <button type="button" onClick={() => setQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-primary">✕</button>
+                          )}
+                          <button type="button" className="absolute right-12 top-1/2 -translate-y-1/2 text-muted hover:text-primary">🎤</button>
+                        </div>
+                        <button type="button" onClick={() => setShowFilters(!showFilters)}
+                          className={`px-4 py-2 rounded-xl border text-sm transition ${showFilters ? "bg-sky-500/20 border-sky-500/50 accent-sky" : "bg-tertiary border-custom text-secondary hover:border-sky-500/30"}`}>
+                          Filters
+                        </button>
+                        <button type="submit" disabled={loading || !query.trim()}
+                          className="px-6 py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 rounded-xl text-sm font-semibold hover:from-sky-400 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-sky-500/20">
+                          {loading ? <span className="flex items-center gap-2"><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Searching...</span> : "Search"}
+                        </button>
                       </div>
-                      <button type="button" onClick={() => setShowFilters(!showFilters)}
-                        className={`px-4 py-2 rounded-xl border text-sm transition ${showFilters ? "bg-sky-500/20 border-sky-500/50 accent-sky" : "bg-tertiary border-custom text-secondary hover:border-sky-500/30"}`}>
-                        Filters
-                      </button>
-                      <button type="submit" disabled={loading || !query.trim()}
-                        className="px-6 py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 rounded-xl text-sm font-semibold hover:from-sky-400 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-sky-500/20">
-                        {loading ? <span className="flex items-center gap-2"><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Searching...</span> : "Search"}
-                      </button>
+                      {showAutocomplete && <AutocompleteDropdown query={query} onSelect={(s) => { setQuery(s); setShowAutocomplete(false); }} />}
                     </div>
 
                     {showFilters && (
@@ -659,6 +1087,21 @@
                             ))}
                           </div>
                         </div>
+                        {brands.length > 0 && (
+                          <div className="md:col-span-2">
+                            <label className="text-xs text-muted uppercase tracking-wide mb-1 block">Brand</label>
+                            <div className="flex flex-wrap gap-2">
+                              {brands.slice(0, 10).map(b => (
+                                <button key={b} type="button" onClick={() => setFilters(f => ({
+                                  ...f, brands: f.brands.includes(b) ? f.brands.filter(x => x !== b) : [...f.brands, b]
+                                }))}
+                                  className={`px-3 py-1 rounded-lg text-xs border transition ${filters.brands.includes(b) ? "bg-violet-500/20 border-violet-500/50 text-violet-400" : "bg-tertiary border-custom text-muted hover:border-violet-500/30"}`}>
+                                  {b}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                         <div className="flex gap-3">
                           <div className="flex-1">
                             <label className="text-xs text-muted uppercase tracking-wide mb-1 block">Min Price (₹)</label>
@@ -680,6 +1123,16 @@
                         </div>
                       </div>
                     )}
+
+                    <div className="border-t border-custom pt-4">
+                      <h4 className="text-xs text-muted uppercase tracking-wide mb-3">Preference Weights</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <WeightSlider label="Price" icon="💰" value={weights.price} onChange={(v) => setWeights(w => ({...w, price: v}))} />
+                        <WeightSlider label="Reviews" icon="💬" value={weights.reviews} onChange={(v) => setWeights(w => ({...w, reviews: v}))} />
+                        <WeightSlider label="Rating" icon="⭐" value={weights.rating} onChange={(v) => setWeights(w => ({...w, rating: v}))} />
+                        <WeightSlider label="Delivery" icon="🚚" value={weights.delivery} onChange={(v) => setWeights(w => ({...w, delivery: v}))} />
+                      </div>
+                    </div>
                   </form>
 
                   <AgentProgressBar loading={loading} />
@@ -690,6 +1143,15 @@
                     </div>
                   )}
 
+                  {loading && !data && (
+                    <div className="space-y-4">
+                      <div className="grid md:grid-cols-3 gap-4">
+                        {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
+                      </div>
+                      <SkeletonTable />
+                    </div>
+                  )}
+
                   {data && (
                     <section className="space-y-5 fade-in">
                       {platforms.length > 0 && (
@@ -697,61 +1159,26 @@
                           <span className="text-[11px] uppercase tracking-widest text-muted font-semibold">Sources:</span>
                           {platforms.map(p => <PlatformBadge key={p} platform={p} />)}
                           <span className="text-[11px] text-muted ml-2">• {data.products?.length || 0} products</span>
+                          <span className="text-[11px] text-muted">• Found in {data.executionTime || '~'}ms</span>
                         </div>
                       )}
 
                       <div className="grid md:grid-cols-3 gap-4">
-                        <TopPickCard emoji="🥇" title="Best Overall" item={data.topPicks?.best_overall} accentColor="gold" onAddToWishlist={addToWishlist} />
-                        <TopPickCard emoji="💰" title="Best Budget" item={data.topPicks?.best_budget} accentColor="green" onAddToWishlist={addToWishlist} />
-                        <TopPickCard emoji="⭐" title="Premium Pick" item={data.topPicks?.premium_pick} accentColor="purple" onAddToWishlist={addToWishlist} />
+                        <TopPickCard emoji="🥇" title="Best Overall" item={data.topPicks?.best_overall} accentColor="gold" onAddToWishlist={addToWishlist} onSetAlert={(p) => setShowAlertModal(p)} />
+                        <TopPickCard emoji="💰" title="Best Budget" item={data.topPicks?.best_budget} accentColor="green" onAddToWishlist={addToWishlist} onSetAlert={(p) => setShowAlertModal(p)} />
+                        <TopPickCard emoji="⭐" title="Premium Pick" item={data.topPicks?.premium_pick} accentColor="purple" onAddToWishlist={addToWishlist} onSetAlert={(p) => setShowAlertModal(p)} />
                       </div>
 
                       <div className="grid md:grid-cols-3 gap-4">
-                        <div className="md:col-span-2 bg-secondary border border-custom rounded-2xl overflow-hidden">
-                          <div className="px-4 py-3 flex items-center justify-between border-b border-custom">
-                            <div className="text-xs uppercase tracking-widest text-secondary font-semibold">📊 Comparison</div>
-                            <button onClick={() => addAlert(selectedProduct)} className="text-[11px] accent-sky hover:text-sky-300">Set Alert</button>
-                          </div>
-                          <div className="overflow-x-auto">
-                            <table className="min-w-full text-xs">
-                              <thead className="bg-tertiary border-b border-custom">
-                                <tr className="text-muted text-[10px] uppercase tracking-widest">
-                                  <th className="px-3 py-2.5 text-left">#</th>
-                                  <th className="px-3 py-2.5 text-left">Product</th>
-                                  <th className="px-3 py-2.5 text-left">Platform</th>
-                                  <th className="px-3 py-2.5 text-right">Price</th>
-                                  <th className="px-3 py-2.5 text-right">Rating</th>
-                                  <th className="px-3 py-2.5 text-right">Score</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {data.products?.map(p => (
-                                  <tr key={p.id} onClick={() => setSelectedProductId(p.id)}
-                                    className={`border-b border-custom/50 cursor-pointer hover:bg-sky-500/5 transition ${p.id === selectedProductId ? "bg-sky-500/10 border-l-2 border-l-sky-400" : ""}`}>
-                                    <td className="px-3 py-2.5 text-muted font-mono">{p.rank || "–"}</td>
-                                    <td className="px-3 py-2.5">
-                                      <div className="font-medium text-sm line-clamp-1">{p.title}</div>
-                                      <div className="text-[10px] text-muted mt-0.5">
-                                        {p.warranty}
-                                        {p.price_intel?.buy_recommendation && (
-                                          <span className={`ml-2 font-semibold ${p.price_intel.buy_recommendation === "Buy" ? "accent-emerald" : p.price_intel.buy_recommendation === "Wait" ? "accent-amber" : "text-muted"}`}>
-                                            {p.price_intel.buy_recommendation === "Buy" ? "🟢 Buy" : p.price_intel.buy_recommendation === "Wait" ? "🟡 Wait" : ""}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </td>
-                                    <td className="px-3 py-2.5"><PlatformBadge platform={p.platform} /></td>
-                                    <td className="px-3 py-2.5 text-right">
-                                      <span className="font-semibold">₹{p.price.toLocaleString()}</span>
-                                      {p.original_price > p.price && <span className="text-[10px] text-muted line-through ml-1">₹{p.original_price.toLocaleString()}</span>}
-                                    </td>
-                                    <td className="px-3 py-2.5 text-right">⭐ {p.seller_rating}</td>
-                                    <td className="px-3 py-2.5 text-right font-bold accent-sky">{p.smart_score}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
+                        <div className="md:col-span-2">
+                          <ComparisonTable 
+                            products={data.products} 
+                            selectedId={selectedProductId} 
+                            onSelect={(id) => { setSelectedProductId(id); setShowDetailModal(true); }}
+                            onSetAlert={(p) => setShowAlertModal(p)}
+                            sortField={sortField}
+                            onSort={handleSort}
+                          />
                         </div>
                         <PriceChart product={selectedProduct} />
                       </div>
@@ -802,7 +1229,7 @@
               {activeView === "settings" && (
                 <div className="fade-in">
                   <h2 className="text-2xl font-bold mb-6">⚙️ Settings</h2>
-                  <SettingsView />
+                  <SettingsView weights={weights} setWeights={setWeights} onPreset={applyPreset} />
                 </div>
               )}
 
