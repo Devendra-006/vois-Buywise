@@ -330,14 +330,14 @@
       );
     }
 
-    function TopCard({ emoji, title, item, color, onWish, onSelect }) {
+    function TopCard({ emoji, title, item, color, onWish }) {
       if (!item) return null;
       const bc = { gold: "border-amber-500/40", green: "border-emerald-500/40", purple: "border-violet-500/40" };
       const gr = { gold: "from-amber-500/10", green: "from-emerald-500/10", purple: "from-violet-500/10" };
       const discount = item.discount || (item.original_price > item.price ? Math.round((1 - item.price / item.original_price) * 100) : 0);
       
       return (
-        <div className={`bg-gradient-to-b ${gr[color]} bg-slate-900/70 border ${bc[color]} rounded-2xl p-4 space-y-3 hover:scale-[1.02] transition cursor-pointer`} onClick={() => onSelect && onSelect(item)}>
+        <div className={`bg-gradient-to-b ${gr[color]} bg-slate-900/70 border ${bc[color]} rounded-2xl p-4 space-y-3`}>
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
               <span className="text-2xl">{emoji}</span>
@@ -653,9 +653,9 @@
                     <MostReviewedSection products={data.products} onWish={addWish} onAlert={addAlert} />
 
                     <div className="grid md:grid-cols-3 gap-4">
-                      <TopCard emoji="🥇" title="Best Overall" item={data.topPicks?.best_overall} color="gold" onWish={addWish} onSelect={p => setSelId(p.id)} />
-                      <TopCard emoji="💰" title="Best Budget" item={data.topPicks?.best_budget} color="green" onWish={addWish} onSelect={p => setSelId(p.id)} />
-                      <TopCard emoji="⭐" title="Premium Pick" item={data.topPicks?.premium_pick} color="purple" onWish={addWish} onSelect={p => setSelId(p.id)} />
+                      <TopCard emoji="🥇" title="Best Overall" item={data.topPicks?.best_overall} color="gold" onWish={addWish} />
+                      <TopCard emoji="💰" title="Best Budget" item={data.topPicks?.best_budget} color="green" onWish={addWish} />
+                      <TopCard emoji="⭐" title="Premium Pick" item={data.topPicks?.premium_pick} color="purple" onWish={addWish} />
                     </div>
 
                     <ComparisonTable products={data.products} selId={selId} setSelId={setSelId} onSetAlert={addAlert} />
