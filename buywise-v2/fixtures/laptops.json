@@ -1,0 +1,101 @@
+[
+  {
+    "id": "lp_1",
+    "title": "ASUS Vivobook 15 Thin & Light Laptop (Intel Core i5-1235U 12th Gen, 16GB RAM, 512GB SSD)",
+    "brand": "ASUS",
+    "category": "laptops",
+    "store": "Amazon India",
+    "price": 46990,
+    "originalPrice": 62990,
+    "discountPercent": 25,
+    "rating": 4.2,
+    "reviewCount": 9400,
+    "productUrl": "https://www.amazon.in/dp/B0C8C8XQ42",
+    "imageUrl": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 2,
+    "seller": "Appario Retail",
+    "isFulfilled": true,
+    "specs": {
+      "processor": "Intel Core i5-1235U 12th Gen",
+      "ramGb": 16,
+      "storageGb": 512,
+      "displaySize": 15.6,
+      "gpu": "Intel Iris Xe",
+      "weightKg": 1.7
+    },
+    "reviewSnippets": [
+      "16GB RAM is a blessing for programming, multitasking, and Excel sheets.",
+      "Lightweight and runs silent on battery.",
+      "Display colors are slightly washed out, not suited for photo editing."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  },
+  {
+    "id": "lp_2",
+    "title": "Lenovo IdeaPad Slim 3 Intel Core i3 12th Gen (8GB RAM, 512GB SSD, Windows 11)",
+    "brand": "Lenovo",
+    "category": "laptops",
+    "store": "Flipkart",
+    "price": 32990,
+    "originalPrice": 48990,
+    "discountPercent": 32,
+    "rating": 4.1,
+    "reviewCount": 14200,
+    "productUrl": "https://www.flipkart.com/lenovo-ideapad-slim-3",
+    "imageUrl": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 3,
+    "seller": "RetailNet",
+    "isFulfilled": true,
+    "specs": {
+      "processor": "Intel Core i3-1215U 12th Gen",
+      "ramGb": 8,
+      "storageGb": 512,
+      "displaySize": 15.6,
+      "gpu": "Intel UHD Graphics",
+      "weightKg": 1.63
+    },
+    "reviewSnippets": [
+      "Best college student laptop for online lectures, coding practice, and browsing.",
+      "Fast boot times thanks to NVMe SSD.",
+      "Keyboard has good tactile feedback with dedicated numpad."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  },
+  {
+    "id": "lp_3",
+    "title": "Apple MacBook Air M2 (13.6-inch Liquid Retina, 8GB Unified Memory, 256GB SSD, Midnight)",
+    "brand": "Apple",
+    "category": "laptops",
+    "store": "Croma",
+    "price": 89900,
+    "originalPrice": 99900,
+    "discountPercent": 10,
+    "rating": 4.7,
+    "reviewCount": 6800,
+    "productUrl": "https://www.croma.com/apple-macbook-air-m2",
+    "imageUrl": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 1,
+    "seller": "Croma Official Retail",
+    "isFulfilled": true,
+    "specs": {
+      "processor": "Apple M2 8-core CPU",
+      "ramGb": 8,
+      "storageGb": 256,
+      "displaySize": 13.6,
+      "gpu": "Apple 8-core or 10-core GPU",
+      "weightKg": 1.24
+    },
+    "reviewSnippets": [
+      "Phenomenal 15+ hour real-world battery life.",
+      "MagSafe charging is back and trackpad remains best in the world.",
+      "Base 8GB RAM can bottleneck heavy 4K multi-stream video edits."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  }
+]

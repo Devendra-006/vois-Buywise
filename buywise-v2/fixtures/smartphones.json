@@ -1,0 +1,138 @@
+[
+  {
+    "id": "sp_1",
+    "title": "OnePlus Nord CE4 (8GB RAM, 128GB Storage, Celadon Marble)",
+    "brand": "OnePlus",
+    "category": "smartphones",
+    "store": "Amazon India",
+    "price": 24999,
+    "originalPrice": 26999,
+    "discountPercent": 7,
+    "rating": 4.2,
+    "reviewCount": 18200,
+    "productUrl": "https://www.amazon.in/dp/B0CX248Z1Z",
+    "imageUrl": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 1,
+    "seller": "Appario Retail",
+    "isFulfilled": true,
+    "specs": {
+      "processor": "Snapdragon 7 Gen 3",
+      "ramGb": 8,
+      "storageGb": 128,
+      "display": "6.7\" 120Hz FHD+ AMOLED",
+      "cameraMp": 50,
+      "batteryMah": 5500,
+      "chargingWatt": 100
+    },
+    "reviewSnippets": [
+      "100W fast charger charges from 0 to 100% in 28 minutes flat.",
+      "OxygenOS is clean, smooth 120Hz scrolling.",
+      "Low light camera images have slight digital noise."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  },
+  {
+    "id": "sp_2",
+    "title": "Redmi 13C 5G (Starlight Green, 4GB RAM, 128GB Storage)",
+    "brand": "Xiaomi",
+    "category": "smartphones",
+    "store": "Flipkart",
+    "price": 9999,
+    "originalPrice": 13999,
+    "discountPercent": 28,
+    "rating": 4.1,
+    "reviewCount": 45300,
+    "productUrl": "https://www.flipkart.com/redmi-13c-5g",
+    "imageUrl": "https://images.unsplash.com/photo-1511707171634-5f897ff02560?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 3,
+    "seller": "RetailNet",
+    "isFulfilled": true,
+    "specs": {
+      "processor": "MediaTek Dimensity 6100+",
+      "ramGb": 4,
+      "storageGb": 128,
+      "display": "6.74\" 90Hz HD+ IPS LCD",
+      "cameraMp": 50,
+      "batteryMah": 5000,
+      "chargingWatt": 18
+    },
+    "reviewSnippets": [
+      "Cheapest reliable 5G phone for everyday WhatsApp, YouTube, and calls.",
+      "Display is only 720p HD+ but bright enough outdoors.",
+      "Includes 10W charger in the box even though phone supports 18W."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  },
+  {
+    "id": "sp_3",
+    "title": "Samsung Galaxy S24 5G (8GB RAM, 256GB, Onyx Black)",
+    "brand": "Samsung",
+    "category": "smartphones",
+    "store": "Reliance Digital",
+    "price": 64999,
+    "originalPrice": 79999,
+    "discountPercent": 18,
+    "rating": 4.5,
+    "reviewCount": 6320,
+    "productUrl": "https://www.reliancedigital.in/samsung-galaxy-s24",
+    "imageUrl": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 1,
+    "seller": "Reliance Retail Official",
+    "isFulfilled": true,
+    "specs": {
+      "processor": "Exynos 2400 Deca-Core",
+      "ramGb": 8,
+      "storageGb": 256,
+      "display": "6.2\" Dynamic AMOLED 2X 120Hz LTPO",
+      "cameraMp": 50,
+      "batteryMah": 4000,
+      "chargingWatt": 25
+    },
+    "reviewSnippets": [
+      "Compact flagship phone fits comfortably in one hand.",
+      "Galaxy AI photo features and Circle to Search work flawlessly.",
+      "Battery life is adequate for 1 day, but heavy gaming drains it fast."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  },
+  {
+    "id": "sp_4",
+    "title": "Nothing Phone (2a) 5G (8GB RAM, 128GB Storage, Black)",
+    "brand": "Nothing",
+    "category": "smartphones",
+    "store": "Flipkart",
+    "price": 23999,
+    "originalPrice": 25999,
+    "discountPercent": 7,
+    "rating": 4.3,
+    "reviewCount": 21800,
+    "productUrl": "https://www.flipkart.com/nothing-phone-2a",
+    "imageUrl": "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 2,
+    "seller": "RetailNet",
+    "isFulfilled": true,
+    "specs": {
+      "processor": "Dimensity 7200 Pro",
+      "ramGb": 8,
+      "storageGb": 128,
+      "display": "6.7\" 120Hz Flexible AMOLED",
+      "cameraMp": 50,
+      "batteryMah": 5000,
+      "chargingWatt": 45
+    },
+    "reviewSnippets": [
+      "Glyph interface is fun and useful for timer countdowns.",
+      "Nothing OS is clean with zero bloatware.",
+      "No charging brick provided in the box."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  }
+]

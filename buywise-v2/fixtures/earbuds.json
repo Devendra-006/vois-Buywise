@@ -1,0 +1,167 @@
+[
+  {
+    "id": "eb_1",
+    "title": "OnePlus Nord Buds 2 TWS Earbuds with 25dB ANC",
+    "brand": "OnePlus",
+    "category": "earbuds",
+    "store": "Amazon India",
+    "price": 2499,
+    "originalPrice": 2999,
+    "discountPercent": 17,
+    "rating": 4.3,
+    "reviewCount": 16420,
+    "productUrl": "https://www.amazon.in/dp/B0BY8MCQ9S",
+    "imageUrl": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 2,
+    "seller": "Appario Retail",
+    "isFulfilled": true,
+    "specs": {
+      "anc": "25dB Active Noise Cancellation",
+      "batteryHours": 36,
+      "driverMm": 12.4,
+      "ipRating": "IP55",
+      "latencyMs": 94,
+      "bluetooth": "5.3"
+    },
+    "reviewSnippets": [
+      "Excellent bass punch and clear vocals for this price tag.",
+      "ANC is decent for indoors and fan noise, battery lasts easily 4-5 days.",
+      "Call quality in heavy traffic is average, but great for meetings indoors."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  },
+  {
+    "id": "eb_2",
+    "title": "boAt Airdopes 141 42H Playtime Beast Mode TWS",
+    "brand": "boAt",
+    "category": "earbuds",
+    "store": "Flipkart",
+    "price": 999,
+    "originalPrice": 4490,
+    "discountPercent": 78,
+    "rating": 4.0,
+    "reviewCount": 92350,
+    "productUrl": "https://www.flipkart.com/boat-airdopes-141",
+    "imageUrl": "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 3,
+    "seller": "FlashTech Retail",
+    "isFulfilled": true,
+    "specs": {
+      "anc": "No ANC (Environmental Noise Cancellation only)",
+      "batteryHours": 42,
+      "driverMm": 8.0,
+      "ipRating": "IPX4",
+      "latencyMs": 80,
+      "bluetooth": "5.1"
+    },
+    "reviewSnippets": [
+      "Unbeatable battery life for under 1000 rupees.",
+      "Loud bass, though audio gets slightly distorted at 100% volume.",
+      "Build quality is plastic-heavy but holds up for daily gym use."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  },
+  {
+    "id": "eb_3",
+    "title": "Realme Buds Air 5 Pro Hi-Res Dual Driver ANC Earbuds",
+    "brand": "Realme",
+    "category": "earbuds",
+    "store": "Amazon India",
+    "price": 4999,
+    "originalPrice": 7999,
+    "discountPercent": 38,
+    "rating": 4.4,
+    "reviewCount": 7850,
+    "productUrl": "https://www.amazon.in/dp/B0CGMD75H6",
+    "imageUrl": "https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 1,
+    "seller": "E-Commerce Titans",
+    "isFulfilled": true,
+    "specs": {
+      "anc": "50dB Flagship ANC",
+      "batteryHours": 40,
+      "driverMm": 11.0,
+      "ipRating": "IPX5",
+      "latencyMs": 40,
+      "bluetooth": "5.3 with LDAC"
+    },
+    "reviewSnippets": [
+      "LDAC codec support makes high-res streaming sound incredible.",
+      "50dB ANC truly cuts out metro and traffic noise.",
+      "Best sounding TWS under 5000 in India right now."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  },
+  {
+    "id": "eb_4",
+    "title": "Sony WF-1000XM5 Wireless Noise Cancelling Earbuds",
+    "brand": "Sony",
+    "category": "earbuds",
+    "store": "Croma",
+    "price": 19990,
+    "originalPrice": 24990,
+    "discountPercent": 20,
+    "rating": 4.6,
+    "reviewCount": 4120,
+    "productUrl": "https://www.croma.com/sony-wf1000xm5",
+    "imageUrl": "https://images.unsplash.com/photo-1598331668826-20cecc596b86?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 1,
+    "seller": "Croma Official Retail",
+    "isFulfilled": true,
+    "specs": {
+      "anc": "Dual processor HD ANC",
+      "batteryHours": 24,
+      "driverMm": 8.4,
+      "ipRating": "IPX4",
+      "latencyMs": 60,
+      "bluetooth": "5.3 with LDAC & LC3"
+    },
+    "reviewSnippets": [
+      "World-class silence in airplanes and trains.",
+      "Dynamic driver X produces studio-grade soundstage.",
+      "Foam tips require a bit of habit, but seal is unmatched."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  },
+  {
+    "id": "eb_5",
+    "title": "Noise Buds VS102 with 50H Playtime and Instacharge",
+    "brand": "Noise",
+    "category": "earbuds",
+    "store": "Flipkart",
+    "price": 899,
+    "originalPrice": 2999,
+    "discountPercent": 70,
+    "rating": 3.9,
+    "reviewCount": 42100,
+    "productUrl": "https://www.flipkart.com/noise-buds-vs102",
+    "imageUrl": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=80",
+    "inStock": true,
+    "deliveryDays": 4,
+    "seller": "SuperComNet",
+    "isFulfilled": false,
+    "specs": {
+      "anc": "No ANC",
+      "batteryHours": 50,
+      "driverMm": 11.0,
+      "ipRating": "IPX5",
+      "latencyMs": 120,
+      "bluetooth": "5.3"
+    },
+    "reviewSnippets": [
+      "Good for podcasts and casual YouTube watching.",
+      "Case hinge feels a bit loose.",
+      "Crazy battery backup for the low price."
+    ],
+    "fetchedAt": "2026-10-24T18:00:00.000Z",
+    "isDemoData": true
+  }
+]

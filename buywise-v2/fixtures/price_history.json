@@ -1,0 +1,25 @@
+{
+  "eb_1": [
+    { "productId": "eb_1", "price": 2999, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-08-01T10:00:00.000Z" },
+    { "productId": "eb_1", "price": 2799, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-08-15T10:00:00.000Z" },
+    { "productId": "eb_1", "price": 2699, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-09-01T10:00:00.000Z" },
+    { "productId": "eb_1", "price": 2799, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-09-18T10:00:00.000Z" },
+    { "productId": "eb_1", "price": 2699, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-10-05T10:00:00.000Z" },
+    { "productId": "eb_1", "price": 2499, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-10-24T18:00:00.000Z" }
+  ],
+  "sp_1": [
+    { "productId": "sp_1", "price": 26999, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-07-20T10:00:00.000Z" },
+    { "productId": "sp_1", "price": 25999, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-08-10T10:00:00.000Z" },
+    { "productId": "sp_1", "price": 24999, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-09-05T10:00:00.000Z" },
+    { "productId": "sp_1", "price": 24999, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-09-25T10:00:00.000Z" },
+    { "productId": "sp_1", "price": 25499, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-10-10T10:00:00.000Z" },
+    { "productId": "sp_1", "price": 24999, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-10-24T18:00:00.000Z" }
+  ],
+  "lp_1": [
+    { "productId": "lp_1", "price": 51990, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-08-01T10:00:00.000Z" },
+    { "productId": "lp_1", "price": 49990, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-08-20T10:00:00.000Z" },
+    { "productId": "lp_1", "price": 48990, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-09-12T10:00:00.000Z" },
+    { "productId": "lp_1", "price": 47990, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-10-01T10:00:00.000Z" },
+    { "productId": "lp_1", "price": 46990, "currency": "INR", "store": "Amazon India", "inStock": true, "fetchedAt": "2026-10-24T18:00:00.000Z" }
+  ]
+}
